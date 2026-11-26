@@ -139,6 +139,9 @@
     "Block suggested video notifications": [
       "BLOCK_SUGGESTED_VIDEO_NOTIFICATIONS"
     ],
+    "Bluetooth microphone for LIVE": [
+      "LIVE_BLUETOOTH_MICROPHONE"
+    ],
     "Camera and microphone indicator": [
       "CAMERA_MIC_INDICATOR"
     ],

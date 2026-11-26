@@ -7,6 +7,7 @@
 package app.morphe.extension.tiktok.settings.preference.categories;
 
 import android.content.Context;
+import android.os.Build;
 import android.preference.PreferenceScreen;
 
 import app.morphe.extension.tiktok.misc.EffectDeviceSpoof;
@@ -73,6 +74,7 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                 || SettingsStatus.cameraBrightnessEnabled
                 || SettingsStatus.effectDeviceSpoofEnabled
                 || SettingsStatus.gameLiveDeviceEnabled
+                || hasLiveBluetoothMicrophone()
                 || SettingsStatus.launcherShortcutsEnabled
                 || SettingsStatus.firstLaunchSetupEnabled
                 || SettingsStatus.screenCaptureEnabled
@@ -472,6 +474,7 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
         if (SettingsStatus.screenCaptureEnabled || SettingsStatus.videoOverlaysEnabled
                 || SettingsStatus.refreshRateEnabled || SettingsStatus.cameraBrightnessEnabled
                 || SettingsStatus.effectDeviceSpoofEnabled || SettingsStatus.gameLiveDeviceEnabled
+                || hasLiveBluetoothMicrophone()
                 || SettingsStatus.launcherShortcutsEnabled || SettingsStatus.firstLaunchSetupEnabled
                 || SettingsStatus.storeIdentityEnabled || SettingsStatus.passkeySignInEnabled
                 || SettingsStatus.appLanguageEnabled || SettingsStatus.remoteConfigFreezeEnabled) {
@@ -550,6 +553,15 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                             + "While you set up a LIVE, this tells the LIVE server you have a Galaxy S25 Ultra. "
                             + "Sign-in and everything else still see your real phone. A quality your phone can't keep up with may stutter.",
                     Settings.REPORT_NEWER_PHONE_TO_GAME_LIVE
+            ));
+        }
+        if (hasLiveBluetoothMicrophone()) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Bluetooth microphone for LIVE",
+                    "Connect your earbuds before starting a LIVE to use their microphone. "
+                            + "Bluetooth call audio can change how playback sounds.",
+                    Settings.LIVE_BLUETOOTH_MICROPHONE
             ));
         }
         if (SettingsStatus.launcherShortcutsEnabled) {
@@ -703,5 +715,9 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                     Settings.DROP_ANIMATED_IMAGE_CACHE
             ));
         }
+    }
+
+    private static boolean hasLiveBluetoothMicrophone() {
+        return SettingsStatus.liveBluetoothMicrophoneEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
     }
 }

@@ -142,6 +142,9 @@
     "Block suggested video notifications": [
       "block_suggested_video_notifications"
     ],
+    "Bluetooth microphone for LIVE": [
+      "live_bluetooth_microphone"
+    ],
     "Camera and microphone indicator": [
       "camera_mic_indicator"
     ],
@@ -3516,6 +3519,12 @@
       "key": "live_auto_tap_rate",
       "type": "string",
       "default": "4"
+    },
+    "live_bluetooth_microphone": {
+      "field": "LIVE_BLUETOOTH_MICROPHONE",
+      "key": "live_bluetooth_microphone",
+      "type": "boolean",
+      "default": false
     },
     "live_button_size": {
       "field": "LIVE_BUTTON_SIZE",

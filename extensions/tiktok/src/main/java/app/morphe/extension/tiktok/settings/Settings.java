@@ -412,6 +412,8 @@ public class Settings extends BaseSettings {
      */
     public static final BooleanSetting REPORT_NEWER_PHONE_TO_GAME_LIVE =
             new BooleanSetting("report_newer_phone_to_game_live", FALSE);
+    public static final BooleanSetting LIVE_BLUETOOTH_MICROPHONE =
+            new BooleanSetting("live_bluetooth_microphone", FALSE);
     // The four Performance patches, in the default selection because each hook asks one of these
     // first. Off until the reader turns one on, and a paused build answers off. The splash, update
     // and traffic hooks act on TikTok's startup tasks, so they need a restart. The animated image
