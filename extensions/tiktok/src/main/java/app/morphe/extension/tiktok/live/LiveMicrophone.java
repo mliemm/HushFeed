@@ -15,26 +15,112 @@ import android.os.Looper;
 
 import androidx.annotation.RequiresApi;
 
+import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
 
-public final class LiveBluetoothMicrophone {
-    private LiveBluetoothMicrophone() {
+/**
+ * The host side of a LIVE: which device captures, whether the LIVE engine isolates background
+ * noise, and whether push to talk keeps the microphone silent between presses.
+ *
+ * <p>The recording bridge calls {@link #begin} before the engine starts, {@link #started} once
+ * the native start returned success, and {@link #end} for every stop or release, including the
+ * stop the engine schedules itself.
+ */
+public final class LiveMicrophone {
+    private static final Set<Object> started = Collections.newSetFromMap(new IdentityHashMap<>());
+    private static final Map<String, Method> METHODS = new ConcurrentHashMap<>();
+
+    private static volatile boolean noiseSuppression;
+    private static volatile boolean pushToTalk;
+    private static volatile boolean talking;
+    private static byte[] silence;
+
+    private LiveMicrophone() {
     }
 
     public static boolean begin(Object recorder) {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && Route.begin(recorder);
     }
 
+    /** The engine has started; the settings that run on top of capture can be applied now. */
+    public static void started(Object recorder) {
+        boolean first;
+        synchronized (started) {
+            first = started.add(recorder);
+        }
+        if (!first) {
+            return;
+        }
+        if (Settings.LIVE_SOUND_ISOLATION.get()) {
+            noiseSuppression = true;
+            invoke(recorder, "enableAudioNoiseDetectionCfg", new Class<?>[]{boolean.class}, true);
+            invoke(recorder, "enableANS", new Class<?>[]{boolean.class}, true);
+        }
+        if (Settings.LIVE_PUSH_TO_TALK.get()) {
+            pushToTalk = true;
+            talking = false;
+            LivePushToTalk.start();
+        }
+    }
+
     public static void end(Object recorder) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             Route.end(recorder);
         }
+        boolean last;
+        synchronized (started) {
+            started.remove(recorder);
+            last = started.isEmpty();
+        }
+        if (!last) {
+            return;
+        }
+        if (noiseSuppression) {
+            noiseSuppression = false;
+            invoke(recorder, "enableANS", new Class<?>[]{boolean.class}, false);
+            invoke(recorder, "enableAudioNoiseDetectionCfg", new Class<?>[]{boolean.class}, false);
+        }
+        if (pushToTalk) {
+            pushToTalk = false;
+            talking = false;
+            LivePushToTalk.stop();
+        }
+    }
+
+    /** True while push to talk is on and the button is not held. */
+    public static boolean isSilent() {
+        return pushToTalk && !talking;
+    }
+
+    public static void setTalking(boolean value) {
+        talking = value;
+    }
+
+    /**
+     * The engine hands the captured PCM to this before the encoder sees it. Push to talk zeroes
+     * the frame between presses; the app's own mute still zeroes it when TikTok is muted.
+     */
+    public static void processFrame(ByteBuffer buffer) {
+        if (!isSilent() || buffer == null) {
+            return;
+        }
+        int capacity = buffer.capacity();
+        byte[] zeros = silence;
+        if (zeros == null || zeros.length != capacity) {
+            zeros = new byte[capacity];
+            silence = zeros;
+        }
+        buffer.clear();
+        buffer.put(zeros);
     }
 
     public static int captureSource(int source) {
@@ -50,6 +136,25 @@ public final class LiveBluetoothMicrophone {
             }
         }
         return source;
+    }
+
+    /**
+     * Calls one of the engine's public controls. The recorder is the audio engine's own module;
+     * the extension compiles separately, so the methods are reached by name.
+     */
+    private static void invoke(Object recorder, String name, Class<?>[] parameters, Object value) {
+        try {
+            String key = name + java.util.Arrays.toString(parameters);
+            Method method = METHODS.get(key);
+            if (method == null) {
+                method = recorder.getClass().getMethod(name, parameters);
+                method.setAccessible(true);
+                METHODS.put(key, method);
+            }
+            method.invoke(recorder, value);
+        } catch (Throwable failure) {
+            Logger.printException(() -> "Could not call the LIVE audio control " + name, failure);
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.S)

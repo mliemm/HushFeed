@@ -142,9 +142,6 @@
     "Block suggested video notifications": [
       "block_suggested_video_notifications"
     ],
-    "Bluetooth microphone for LIVE": [
-      "live_bluetooth_microphone"
-    ],
     "Camera and microphone indicator": [
       "camera_mic_indicator"
     ],
@@ -643,6 +640,11 @@
       "live_name_alert_names",
       "live_name_alerts_listen",
       "remembered_live_quality"
+    ],
+    "LIVE microphone": [
+      "live_bluetooth_microphone",
+      "live_sound_isolation",
+      "live_push_to_talk"
     ],
     "Lift text length limits": [
       "lift_length_limits"
@@ -3634,6 +3636,12 @@
       "type": "boolean",
       "default": false
     },
+    "live_push_to_talk": {
+      "field": "LIVE_PUSH_TO_TALK",
+      "key": "live_push_to_talk",
+      "type": "boolean",
+      "default": false
+    },
     "live_record_quality": {
       "field": "LIVE_RECORD_QUALITY",
       "key": "live_record_quality",
@@ -3655,6 +3663,12 @@
     "live_running_time": {
       "field": "LIVE_RUNNING_TIME",
       "key": "live_running_time",
+      "type": "boolean",
+      "default": false
+    },
+    "live_sound_isolation": {
+      "field": "LIVE_SOUND_ISOLATION",
+      "key": "live_sound_isolation",
       "type": "boolean",
       "default": false
     },

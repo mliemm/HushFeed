@@ -27,10 +27,12 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
 
-private const val PATCH = "Bluetooth microphone for LIVE"
+private const val PATCH = "LIVE microphone"
 internal const val LIVE_AUDIO_DEVICE_MODULE = "Lcom/ss/lyrax/live_core/core/engine/AudioDeviceModule;"
 internal const val LYRAX_RECORD = "Lcom/ss/lyrax/audio/device/webrtc/WebRtcAudioRecord;"
-private const val EXTENSION = "Lapp/morphe/extension/tiktok/live/LiveBluetoothMicrophone;"
+private const val LYRAX_RECORD_THREAD =
+    "Lcom/ss/lyrax/audio/device/webrtc/WebRtcAudioRecord\$AudioRecordThread;"
+private const val EXTENSION = "Lapp/morphe/extension/tiktok/live/LiveMicrophone;"
 
 private enum class CaptureCall(val nativeName: String, val returnType: String) {
     START("nativeStartRecording", "I"),
@@ -52,36 +54,45 @@ private fun CaptureCall.bridge() = MutableMethod(
     val start = this@bridge == CaptureCall.START
     val invoke = if (this@bridge == CaptureCall.RELEASE) "invoke-virtual" else "invoke-direct"
     val finish = "invoke-static {p0}, $EXTENSION->end(Ljava/lang/Object;)V"
+    val started = "invoke-static {p0}, $EXTENSION->started(Ljava/lang/Object;)V"
+    val begin = "invoke-static {p0}, $EXTENSION->begin(Ljava/lang/Object;)Z"
     val result = if (returnType == "I") "move-result v1" else ""
     val returnValue = if (returnType == "I") "return v1" else "return-void"
-    val begin = "invoke-static {p0}, $EXTENSION->begin(Ljava/lang/Object;)Z"
-    val beginCode = if (start) "$begin\nmove-result v0" else ""
-    val afterCall = if (start) "if-eqz v1, :done\nif-eqz v0, :done" else ""
-    val afterThrow = if (start) "if-eqz v0, :throw" else ""
-    addInstructions(
-        0,
-        """
-            $beginCode
-            $invoke {p0}, ${this@bridge.descriptor()}
-            $result
-            $afterCall
-            $finish
-            :done
-            $returnValue
-            move-exception v1
-            $afterThrow
-            $finish
-            :throw
-            throw v1
-        """,
-    )
-    val body = implementation!!
+    val body = if (start) """
+        $begin
+        move-result v0
+        $invoke {p0}, ${this@bridge.descriptor()}
+        $result
+        if-nez v1, :started
+        if-eqz v0, :done
+        $finish
+        goto :done
+        :started
+        $started
+        :done
+        $returnValue
+        move-exception v1
+        if-eqz v0, :throw
+        $finish
+        :throw
+        throw v1
+    """ else """
+        $invoke {p0}, ${this@bridge.descriptor()}
+        $result
+        $finish
+        $returnValue
+        move-exception v1
+        $finish
+        throw v1
+    """
+    addInstructions(0, body)
+    val implementation = implementation!!
     val nativeCall = if (start) 2 else 0
-    val handler = body.instructions.indexOfFirst { it.opcode == Opcode.MOVE_EXCEPTION }
-    body.addCatch(
-        body.newLabelForIndex(nativeCall),
-        body.newLabelForIndex(nativeCall + if (returnType == "I") 2 else 1),
-        body.newLabelForIndex(handler),
+    val handler = implementation.instructions.indexOfFirst { it.opcode == Opcode.MOVE_EXCEPTION }
+    implementation.addCatch(
+        implementation.newLabelForIndex(nativeCall),
+        implementation.newLabelForIndex(nativeCall + if (returnType == "I") 2 else 1),
+        implementation.newLabelForIndex(handler),
     )
 }
 
@@ -108,11 +119,23 @@ private fun MutableClass.routeCaptureCalls(vararg nativeCalls: CaptureCall): Set
     return replaced
 }
 
+private fun MutableClass.requireControl(name: String) {
+    if (methods.none {
+            it.name == name
+                && it.parameters.map { parameter -> parameter.type } == listOf("Z")
+                && it.returnType == "V"
+        }
+    ) {
+        throw PatchException("$PATCH: the LIVE audio control $name was not found")
+    }
+}
+
 @Suppress("unused")
-val liveBluetoothMicrophonePatch = configurableBytecodePatch(
+val liveMicrophonePatch = configurableBytecodePatch(
     name = PATCH,
-    description = "Prefers a connected Bluetooth headset microphone when you broadcast a LIVE on Android 12 " +
-        "or newer. Starts off. Turn it on in Hushfeed settings > App.",
+    description = "Lets a connected Bluetooth headset capture your LIVE, adds TikTok's own noise " +
+        "suppression, and puts a hold to talk button over the room. Each starts off and has its " +
+        "own switch in Hushfeed settings > App.",
     default = false,
 ) {
     category("Interface")
@@ -129,8 +152,14 @@ val liveBluetoothMicrophonePatch = configurableBytecodePatch(
             throw PatchException("$PATCH: Lyrax's LIVE recording lifecycle has changed")
         }
         calls.forEach { audio.methods.add(it.bridge()) }
+        audio.requireControl("enableANS")
+        audio.requireControl("enableAudioNoiseDetectionCfg")
 
-        val recorder = mutableClassDefBy(LYRAX_RECORD).methods.singleOrNull {
+        val record = mutableClassDefBy(LYRAX_RECORD)
+        if (record.fields.none { it.name == "byteBuffer" }) {
+            throw PatchException("$PATCH: Lyrax's LIVE record buffer was not found")
+        }
+        val recorder = record.methods.singleOrNull {
             it.name == "cvtNativeSetAudioSource" && it.parameters.map { parameter -> parameter.type } == listOf("I", "Z")
                 && it.returnType == "I"
         } ?: throw PatchException("$PATCH: Lyrax's microphone source selector was not found")
@@ -150,9 +179,30 @@ val liveBluetoothMicrophonePatch = configurableBytecodePatch(
             )
         }
 
+        val capture = mutableClassDefBy(LYRAX_RECORD_THREAD).methods.singleOrNull { method ->
+            method.implementation?.instructions?.any {
+                it.getReference<MethodReference>()?.name == "nativeDataIsRecorded"
+            } == true
+        } ?: throw PatchException("$PATCH: the LIVE capture thread was not found")
+        val instructions = capture.implementation!!.instructions
+        val nativeCall = instructions.indexOfFirst {
+            it.getReference<MethodReference>()?.name == "nativeDataIsRecorded"
+        }
+        val muteCheck = (0 until nativeCall).lastOrNull {
+            instructions[it].opcode == Opcode.SGET_BOOLEAN
+        } ?: throw PatchException("$PATCH: the LIVE microphone mute check was not found")
+        capture.addInstructions(
+            muteCheck,
+            """
+                iget-object v0, p0, $LYRAX_RECORD_THREAD->this${'$'}0:$LYRAX_RECORD
+                iget-object v0, v0, $LYRAX_RECORD->byteBuffer:Ljava/nio/ByteBuffer;
+                invoke-static {v0}, $EXTENSION->processFrame(Ljava/nio/ByteBuffer;)V
+            """,
+        )
+
         SettingsStatusLoadFingerprint.method.addInstruction(
             0,
-            "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableLiveBluetoothMicrophone()V",
+            "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableLiveMicrophone()V",
         )
     }
 }

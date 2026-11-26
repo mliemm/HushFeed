@@ -3532,3 +3532,10 @@ Remembered %1$s	تم تذكره في %1$s
 Unavailable since %1$s	غير متاح منذ %1$s
 Bluetooth microphone for LIVE	ميكروفون بلوتوث للبث المباشر
 Connect your earbuds before starting a LIVE to use their microphone. Bluetooth call audio can change how playback sounds.	وصّل سماعات الأذن قبل بدء البث المباشر لاستخدام ميكروفونها. قد يتغير صوت التشغيل عند استخدام وضع مكالمات البلوتوث.
+Sound isolation for LIVE	عزل الصوت للبث المباشر
+Turns on TikTok's own microphone noise suppression while you broadcast, so steady sounds like fans and traffic are quieter. It can make your voice sound different.	يشغّل خاصية إزالة ضوضاء الميكروفون من TikTok أثناء البث، فتصبح الأصوات الثابتة مثل المراوح وحركة المرور أهدأ. قد يبدو صوتك مختلفًا.
+Push to talk for LIVE	اضغط للتحدث في البث المباشر
+Adds a Talk button while you broadcast. Hold it to let the LIVE hear you, and release it to mute. The LIVE is muted until you press it.	يضيف زر Talk أثناء البث. اضغط مع الاستمرار ليسمعك البث المباشر، واتركه لكتم الصوت. يظل البث صامتًا حتى تضغط الزر.
+Talk	تحدث
+Hold to talk	اضغط مع الاستمرار للتحدث
+Talking	تتحدث

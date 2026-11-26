@@ -74,7 +74,7 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                 || SettingsStatus.cameraBrightnessEnabled
                 || SettingsStatus.effectDeviceSpoofEnabled
                 || SettingsStatus.gameLiveDeviceEnabled
-                || hasLiveBluetoothMicrophone()
+                || hasLiveMicrophone()
                 || SettingsStatus.launcherShortcutsEnabled
                 || SettingsStatus.firstLaunchSetupEnabled
                 || SettingsStatus.screenCaptureEnabled
@@ -474,7 +474,7 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
         if (SettingsStatus.screenCaptureEnabled || SettingsStatus.videoOverlaysEnabled
                 || SettingsStatus.refreshRateEnabled || SettingsStatus.cameraBrightnessEnabled
                 || SettingsStatus.effectDeviceSpoofEnabled || SettingsStatus.gameLiveDeviceEnabled
-                || hasLiveBluetoothMicrophone()
+                || hasLiveMicrophone()
                 || SettingsStatus.launcherShortcutsEnabled || SettingsStatus.firstLaunchSetupEnabled
                 || SettingsStatus.storeIdentityEnabled || SettingsStatus.passkeySignInEnabled
                 || SettingsStatus.appLanguageEnabled || SettingsStatus.remoteConfigFreezeEnabled) {
@@ -555,13 +555,30 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                     Settings.REPORT_NEWER_PHONE_TO_GAME_LIVE
             ));
         }
-        if (hasLiveBluetoothMicrophone()) {
+        if (hasLiveMicrophone()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                addPreference(new TogglePreference(
+                        context,
+                        "Bluetooth microphone for LIVE",
+                        "Connect your earbuds before starting a LIVE to use their microphone. "
+                                + "Bluetooth call audio can change how playback sounds.",
+                        Settings.LIVE_BLUETOOTH_MICROPHONE
+                ));
+            }
             addPreference(new TogglePreference(
                     context,
-                    "Bluetooth microphone for LIVE",
-                    "Connect your earbuds before starting a LIVE to use their microphone. "
-                            + "Bluetooth call audio can change how playback sounds.",
-                    Settings.LIVE_BLUETOOTH_MICROPHONE
+                    "Sound isolation for LIVE",
+                    "Turns on TikTok's own microphone noise suppression while you broadcast, so "
+                            + "steady sounds like fans and traffic are quieter. It can make your "
+                            + "voice sound different.",
+                    Settings.LIVE_SOUND_ISOLATION
+            ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Push to talk for LIVE",
+                    "Adds a Talk button while you broadcast. Hold it to let the LIVE hear you, and "
+                            + "release it to mute. The LIVE is muted until you press it.",
+                    Settings.LIVE_PUSH_TO_TALK
             ));
         }
         if (SettingsStatus.launcherShortcutsEnabled) {
@@ -717,7 +734,7 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
         }
     }
 
-    private static boolean hasLiveBluetoothMicrophone() {
-        return SettingsStatus.liveBluetoothMicrophoneEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
+    private static boolean hasLiveMicrophone() {
+        return SettingsStatus.liveMicrophoneEnabled;
     }
 }
