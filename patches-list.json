@@ -223,7 +223,7 @@
     },
     {
       "name": "Advanced downloads",
-      "description": "Adds more ways to save: pick the video quality, save full-size photos, the sound on its own or a photo post as one video, hold a profile picture or story to save it, save a story, a video's cover or a mini drama's episodes from the share sheet, put a save button on the video, and pick videos on a profile grid to save in one run (or delete your own picked posts). Starts off. Turn it on in Hushfeed settings > Downloads. The save button's switch is in Feed screen > Buttons on videos.",
+      "description": "Adds more ways to save: pick the video quality, save full-size photos, the sound on its own or a photo post as one video, hold a profile picture or story to save it, save a story, a video's cover or a mini drama's episodes from the share sheet, put a save button on the video, and pick videos on a profile grid to save in one run (or delete your own picked posts). Save buttons and story, profile and grid saving start on. Adjust them in Hushfeed settings > Downloads. The save button's switch is in Feed screen > Buttons on videos.",
       "category": "Downloads",
       "use": true,
       "dependencies": [
@@ -266,7 +266,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -275,7 +275,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -374,7 +374,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -392,7 +392,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -401,7 +401,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -527,7 +527,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -545,7 +545,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -554,7 +554,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -572,7 +572,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -8395,9 +8395,9 @@
     },
     {
       "name": "LIVE microphone",
-      "description": "Lets a connected Bluetooth headset capture your LIVE, adds TikTok's own noise suppression, and puts a hold to talk button over the room. Each starts off and has its own switch in Hushfeed settings > App.",
+      "description": "Lets a connected Bluetooth headset capture your LIVE, adds TikTok's own noise suppression, and puts a hold to talk button over the room. Bluetooth microphone and sound isolation start on. Push to talk starts off. Each has its own switch in Hushfeed settings > App.",
       "category": "Interface",
-      "use": false,
+      "use": true,
       "dependencies": [
         "Patch",
         "Settings"
@@ -8437,7 +8437,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -8446,7 +8446,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -8745,7 +8745,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {

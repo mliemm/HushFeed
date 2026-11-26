@@ -1774,7 +1774,7 @@
       "field": "DOWNLOAD_BUTTON",
       "key": "download_button",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "download_button_position": {
       "field": "DOWNLOAD_BUTTON_POSITION",
@@ -1906,7 +1906,7 @@
       "field": "DOWNLOAD_WATERMARK_FALLBACK",
       "key": "download_watermark_fallback",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "download_without_sound": {
       "field": "DOWNLOAD_WITHOUT_SOUND",
@@ -3252,7 +3252,7 @@
       "field": "HOLD_SAVE_TO_DOWNLOAD",
       "key": "hold_save_to_download",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "hold_speed": {
       "field": "HOLD_SPEED",
@@ -3526,7 +3526,7 @@
       "field": "LIVE_BLUETOOTH_MICROPHONE",
       "key": "live_bluetooth_microphone",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "live_button_size": {
       "field": "LIVE_BUTTON_SIZE",
@@ -3670,7 +3670,7 @@
       "field": "LIVE_SOUND_ISOLATION",
       "key": "live_sound_isolation",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "live_start_quality": {
       "field": "LIVE_START_QUALITY",
@@ -4098,7 +4098,7 @@
       "field": "PICK_GRID_VIDEOS",
       "key": "pick_grid_videos",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "picture_in_picture": {
       "field": "PICTURE_IN_PICTURE",
@@ -4386,31 +4386,31 @@
       "field": "SAVE_COVER_BUTTON",
       "key": "save_cover_button",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "save_episodes_button": {
       "field": "SAVE_EPISODES_BUTTON",
       "key": "save_episodes_button",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "save_profile_picture": {
       "field": "SAVE_PROFILE_PICTURE",
       "key": "save_profile_picture",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "save_story": {
       "field": "SAVE_STORY",
       "key": "save_story",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "save_story_from_share": {
       "field": "SAVE_STORY_FROM_SHARE",
       "key": "save_story_from_share",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "save_story_pick": {
       "field": "SAVE_STORY_PICK",
