@@ -7,9 +7,9 @@
   "patches": [
     {
       "name": "AMOLED dark theme",
-      "description": "Makes TikTok's dark mode backgrounds pure black, or a dark color you pick in this patch's options. Black lets OLED screens switch those pixels off. Light mode doesn't change. The AMOLED dark mode switch in Hushfeed settings > App starts on, and turning it off brings TikTok's own dark grays back.",
+      "description": "Makes TikTok's dark mode backgrounds pure black, or a dark color you pick in this patch's options. Black lets OLED screens switch those pixels off. Light mode doesn't change. TikTok defaults to dark mode when no theme has been chosen. The AMOLED dark mode switch in Hushfeed settings > App starts on, and turning it off brings TikTok's own dark grays back.",
       "category": "Interface",
-      "use": false,
+      "use": true,
       "dependencies": [
         "Patch"
       ],
@@ -223,7 +223,7 @@
     },
     {
       "name": "Advanced downloads",
-      "description": "Adds more ways to save: pick the video quality, save full-size photos, the sound on its own or a photo post as one video, hold a profile picture or story to save it, save a story, a video's cover or a mini drama's episodes from the share sheet, put a save button on the video, and pick videos on a profile grid to save in one run (or delete your own picked posts). Starts off. Turn it on in Hushfeed settings > Downloads. The save button's switch is in Feed screen > Buttons on videos.",
+      "description": "Adds more ways to save: pick the video quality, save full-size photos, the sound on its own or a photo post as one video, hold a profile picture or story to save it, save a story, a video's cover or a mini drama's episodes from the share sheet, put a save button on the video, and pick videos on a profile grid to save in one run (or delete your own picked posts). Save buttons and story, profile and grid saving start on. Adjust them in Hushfeed settings > Downloads. The save button's switch is in Feed screen > Buttons on videos.",
       "category": "Downloads",
       "use": true,
       "dependencies": [
@@ -266,7 +266,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -275,7 +275,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -374,7 +374,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -392,7 +392,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -401,7 +401,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -527,7 +527,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -545,7 +545,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -554,7 +554,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -572,7 +572,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {
@@ -8448,6 +8448,73 @@
       ]
     },
     {
+      "name": "LIVE microphone",
+      "description": "Lets a connected Bluetooth headset capture your LIVE, adds TikTok's own noise suppression, and puts a hold to talk button over the room. Bluetooth microphone and sound isolation and push to talk start on. Each has its own switch in Hushfeed settings > App.",
+      "category": "Interface",
+      "use": true,
+      "dependencies": [
+        "Patch",
+        "Settings"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "48.0.2"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "signatures": [
+            "9041803e91bcb814b4b4399fb5c85a91640b755e5e8ba76813814bf4cf2ab5ba"
+          ],
+          "targets": [
+            {
+              "version": "48.0.2",
+              "experimental": false,
+              "versionCodes": {
+                "ARM64_V8A": 2024800020,
+                "ARMEABI_V7A": 2024800020,
+                "X86": 2024800020,
+                "X86_64": 2024800020
+              }
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "live_bluetooth_microphone",
+          "title": "Default: live bluetooth microphone",
+          "description": null,
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        },
+        {
+          "key": "live_sound_isolation",
+          "title": "Default: live sound isolation",
+          "description": null,
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        },
+        {
+          "key": "live_push_to_talk",
+          "title": "Default: live push to talk",
+          "description": null,
+          "required": false,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        }
+      ]
+    },
+    {
       "name": "Lift text length limits",
       "description": "Lets you write longer comments, repost notes and bios than the app normally allows. TikTok can still refuse one that's too long. Starts off. Turn it on in Hushfeed settings > Comments.",
       "category": "Comments",
@@ -8732,7 +8799,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         },
         {

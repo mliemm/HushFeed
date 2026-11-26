@@ -33,9 +33,10 @@ val amoledThemePatch = resourcePatch(
     name = "AMOLED dark theme",
     description = "Makes TikTok's dark mode backgrounds pure black, or a dark color you pick " +
         "in this patch's options. Black lets OLED screens switch those pixels off. Light mode " +
-        "doesn't change. The AMOLED dark mode switch in Hushfeed settings > App starts on, and " +
+        "doesn't change. TikTok defaults to dark mode when no theme has been chosen. " +
+        "The AMOLED dark mode switch in Hushfeed settings > App starts on, and " +
         "turning it off brings TikTok's own dark grays back.",
-    default = false,
+    default = true,
 ) {
     category("Interface")
     compatibleWith(*AppCompatibilities.tiktok())

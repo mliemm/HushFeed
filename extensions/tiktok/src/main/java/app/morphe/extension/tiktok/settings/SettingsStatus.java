@@ -141,6 +141,7 @@ public class SettingsStatus {
     public static boolean cameraBrightnessEnabled = false;
     public static boolean effectDeviceSpoofEnabled = false;
     public static boolean gameLiveDeviceEnabled = false;
+    public static boolean liveMicrophoneEnabled = false;
     public static boolean launcherShortcutsEnabled = false;
     public static boolean firstLaunchSetupEnabled = false;
     public static boolean duetStitchEnabled = false;
@@ -670,6 +671,10 @@ public class SettingsStatus {
 
     public static void enableGameLiveDevice() {
         gameLiveDeviceEnabled = true;
+    }
+
+    public static void enableLiveMicrophone() {
+        liveMicrophoneEnabled = true;
     }
 
     public static void enableLauncherShortcuts() {

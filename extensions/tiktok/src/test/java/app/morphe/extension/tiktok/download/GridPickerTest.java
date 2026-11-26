@@ -138,8 +138,8 @@ public class GridPickerTest {
         return null;
     }
 
-    @Test public void theSwitchStartsOff() {
-        assertFalse(Settings.PICK_GRID_VIDEOS.defaultValue);
+    @Test public void theSwitchStartsOn() {
+        assertTrue(Settings.PICK_GRID_VIDEOS.defaultValue);
     }
 
     @Test public void aCellGetsACircleOverTikToksViewsAndNoCoverUntilSomethingIsPicked() {

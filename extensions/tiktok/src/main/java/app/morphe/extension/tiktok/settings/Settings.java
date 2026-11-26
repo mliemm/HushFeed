@@ -195,13 +195,13 @@ public class Settings extends BaseSettings {
      */
     public static final StringSetting DOWNLOAD_SOUND_FORMAT = new StringSetting("download_sound_format", "original");
     /** TikTok's watermarked copy saved when the clean file can't be fetched, instead of nothing. */
-    public static final BooleanSetting DOWNLOAD_WATERMARK_FALLBACK = new BooleanSetting("download_watermark_fallback", FALSE);
+    public static final BooleanSetting DOWNLOAD_WATERMARK_FALLBACK = new BooleanSetting("download_watermark_fallback", TRUE);
     /** The video's cover, at the largest size it comes in, saved with each Download. */
     public static final BooleanSetting DOWNLOAD_COVER = new BooleanSetting("download_cover", FALSE);
     /** A Save cover button beside Download in a video's share sheet; Download then saves only the video (#146). */
-    public static final BooleanSetting SAVE_COVER_BUTTON = new BooleanSetting("save_cover_button", FALSE);
+    public static final BooleanSetting SAVE_COVER_BUTTON = new BooleanSetting("save_cover_button", TRUE);
     /** A Save episodes button in a mini drama episode's share sheet, listing the drama's episodes to pick from (#444). */
-    public static final BooleanSetting SAVE_EPISODES_BUTTON = new BooleanSetting("save_episodes_button", FALSE);
+    public static final BooleanSetting SAVE_EPISODES_BUTTON = new BooleanSetting("save_episodes_button", TRUE);
     public static final BooleanSetting DOWNLOAD_WITHOUT_SOUND =
             new BooleanSetting("download_without_sound", FALSE);
     public static final BooleanSetting DOWNLOAD_PROGRESS = new BooleanSetting("download_progress", false);
@@ -248,17 +248,17 @@ public class Settings extends BaseSettings {
     public static final StringSetting DOWNLOAD_STICKER_FORMAT = new StringSetting("download_sticker_format", "mp4");
     /** Hushfeed's own Save media box after a received chat sticker's tap (#274). */
     public static final BooleanSetting DM_STICKER_SAVE_BOX = new BooleanSetting("dm_sticker_save_box", TRUE);
-    public static final BooleanSetting SAVE_PROFILE_PICTURE = new BooleanSetting("save_profile_picture", FALSE);
+    public static final BooleanSetting SAVE_PROFILE_PICTURE = new BooleanSetting("save_profile_picture", TRUE);
     /** Holding a profile picture shows it full screen with a Save button instead of saving it at once (#467). */
     public static final BooleanSetting PROFILE_PICTURE_VIEWER = new BooleanSetting("profile_picture_viewer", FALSE,
             false, Setting.parent(SAVE_PROFILE_PICTURE));
-    public static final BooleanSetting SAVE_STORY = new BooleanSetting("save_story", FALSE);
-    public static final BooleanSetting SAVE_STORY_FROM_SHARE = new BooleanSetting("save_story_from_share", FALSE);
+    public static final BooleanSetting SAVE_STORY = new BooleanSetting("save_story", TRUE);
+    public static final BooleanSetting SAVE_STORY_FROM_SHARE = new BooleanSetting("save_story_from_share", TRUE);
     /** A story save asks which of the person's stories to keep, with the one on screen checked (#393). */
     public static final BooleanSetting SAVE_STORY_PICK = new BooleanSetting("save_story_pick", FALSE, false,
             Setting.parentsAny(SAVE_STORY, SAVE_STORY_FROM_SHARE));
     /** A circle on each profile, Liked or Favorites grid cell, to pick posts and save them in one run (#27). */
-    public static final BooleanSetting PICK_GRID_VIDEOS = new BooleanSetting("pick_grid_videos", FALSE);
+    public static final BooleanSetting PICK_GRID_VIDEOS = new BooleanSetting("pick_grid_videos", TRUE);
     /** Delete on the picking bar while every picked post is your own, to delete them in one run (#487). */
     public static final BooleanSetting DELETE_PICKED_POSTS = new BooleanSetting("delete_picked_posts", FALSE, false,
             Setting.parent(PICK_GRID_VIDEOS));
@@ -412,6 +412,12 @@ public class Settings extends BaseSettings {
      */
     public static final BooleanSetting REPORT_NEWER_PHONE_TO_GAME_LIVE =
             new BooleanSetting("report_newer_phone_to_game_live", FALSE);
+    public static final BooleanSetting LIVE_BLUETOOTH_MICROPHONE =
+            new BooleanSetting("live_bluetooth_microphone", TRUE);
+    public static final BooleanSetting LIVE_SOUND_ISOLATION =
+            new BooleanSetting("live_sound_isolation", TRUE);
+    public static final BooleanSetting LIVE_PUSH_TO_TALK =
+            new BooleanSetting("live_push_to_talk", TRUE);
     // The four Performance patches, in the default selection because each hook asks one of these
     // first. Off until the reader turns one on, and a paused build answers off. The splash, update
     // and traffic hooks act on TikTok's startup tasks, so they need a restart. The animated image
@@ -1318,13 +1324,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting FEED_MUTED = new BooleanSetting("feed_muted", FALSE, false, false);
     public static final BooleanSetting FEED_MUTE_BUTTON = new BooleanSetting("feed_mute_button", FALSE);
     /** A save button on the video itself, so a save doesn't start with a long press or the share sheet (#299). */
-    public static final BooleanSetting DOWNLOAD_BUTTON = new BooleanSetting("download_button", FALSE);
+    public static final BooleanSetting DOWNLOAD_BUTTON = new BooleanSetting("download_button", TRUE);
     /** How big Hushfeed's buttons on videos are, in dp (#433). */
     public static final StringSetting VIDEO_BUTTON_SIZE = new StringSetting("video_button_size", "48");
     /** Those buttons stand in a column over TikTok's own on the right, not where they were dragged (#433). */
     public static final BooleanSetting VIDEO_BUTTONS_OVER_RAIL = new BooleanSetting("video_buttons_over_rail", FALSE);
     /** Holding TikTok's own save button in the right column downloads the video (#433). */
-    public static final BooleanSetting HOLD_SAVE_TO_DOWNLOAD = new BooleanSetting("hold_save_to_download", FALSE);
+    public static final BooleanSetting HOLD_SAVE_TO_DOWNLOAD = new BooleanSetting("hold_save_to_download", TRUE);
     /** TikTok's audio focus waits for a video to play, so opening the app or a chat leaves other apps' music alone (#283). */
     public static final BooleanSetting FOCUS_WAITS_FOR_VIDEO = new BooleanSetting("focus_waits_for_video", FALSE);
     public static final BooleanSetting HIDE_FEED_CAPTION = new BooleanSetting("hide_feed_caption", FALSE);
