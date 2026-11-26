@@ -37,18 +37,28 @@ import app.morphe.extension.tiktok.settings.Settings;
  */
 public final class LiveMicrophone {
     private static final Set<Object> started = Collections.newSetFromMap(new IdentityHashMap<>());
+    private static final Set<Object> pending = Collections.newSetFromMap(new IdentityHashMap<>());
     private static final Map<String, Method> METHODS = new ConcurrentHashMap<>();
 
     private static volatile boolean noiseSuppression;
     private static volatile boolean pushToTalk;
     private static volatile boolean talking;
+    private static volatile boolean pendingPushToTalk;
     private static byte[] silence;
 
     private LiveMicrophone() {
     }
 
     public static boolean begin(Object recorder) {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && Route.begin(recorder);
+        boolean pendingAdded = false;
+        synchronized (started) {
+            if (Settings.LIVE_PUSH_TO_TALK.get() && !started.contains(recorder)) {
+                pendingAdded = pending.add(recorder);
+                pendingPushToTalk = !pending.isEmpty();
+            }
+        }
+        boolean routeAdded = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && Route.begin(recorder);
+        return pendingAdded || routeAdded;
     }
 
     /** The engine has started; the settings that run on top of capture can be applied now. */
@@ -70,6 +80,10 @@ public final class LiveMicrophone {
             talking = false;
             LivePushToTalk.start();
         }
+        synchronized (started) {
+            pending.remove(recorder);
+            pendingPushToTalk = !pending.isEmpty();
+        }
     }
 
     public static void end(Object recorder) {
@@ -78,6 +92,8 @@ public final class LiveMicrophone {
         }
         boolean last;
         synchronized (started) {
+            pending.remove(recorder);
+            pendingPushToTalk = !pending.isEmpty();
             started.remove(recorder);
             last = started.isEmpty();
         }
@@ -98,7 +114,7 @@ public final class LiveMicrophone {
 
     /** True while push to talk is on and the button is not held. */
     public static boolean isSilent() {
-        return pushToTalk && !talking;
+        return pendingPushToTalk || (pushToTalk && !talking);
     }
 
     public static void setTalking(boolean value) {

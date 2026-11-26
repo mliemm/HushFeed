@@ -34,7 +34,7 @@ private const val LYRAX_RECORD_THREAD =
     "Lcom/ss/lyrax/audio/device/webrtc/WebRtcAudioRecord\$AudioRecordThread;"
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/live/LiveMicrophone;"
 
-private enum class CaptureCall(val nativeName: String, val returnType: String) {
+internal enum class CaptureCall(val nativeName: String, val returnType: String) {
     START("nativeStartRecording", "I"),
     STOP("nativeStopRecording", "I"),
     RELEASE("nativeRelease", "V"),
@@ -45,7 +45,7 @@ private fun CaptureCall.descriptor() = "$LIVE_AUDIO_DEVICE_MODULE->$nativeName()
 private fun CaptureCall.bridgeName() = "hushfeed\$${nativeName}"
 
 // Follow the native capture calls, including the stops and releases Lyrax schedules.
-private fun CaptureCall.bridge() = MutableMethod(
+internal fun CaptureCall.bridge() = MutableMethod(
     ImmutableMethod(
         LIVE_AUDIO_DEVICE_MODULE, bridgeName(), emptyList(), returnType, AccessFlags.FINAL.value,
         null, null, ImmutableMethodImplementation(3, emptyList(), null, null),
@@ -63,7 +63,7 @@ private fun CaptureCall.bridge() = MutableMethod(
         move-result v0
         $invoke {p0}, ${this@bridge.descriptor()}
         $result
-        if-nez v1, :started
+        if-eqz v1, :started
         if-eqz v0, :done
         $finish
         goto :done

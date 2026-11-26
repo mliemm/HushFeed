@@ -168,6 +168,20 @@ public class LiveMicrophoneTest {
         shadowOf(Looper.getMainLooper()).idle();
     }
 
+    @Test public void pushToTalkSilencesFramesDuringNativeStartAndClearsAfterFailure() {
+        Settings.LIVE_BLUETOOTH_MICROPHONE.save(false);
+        Settings.LIVE_PUSH_TO_TALK.save(true);
+        assertTrue(LiveMicrophone.begin(first));
+        ByteBuffer frame = ByteBuffer.allocateDirect(8);
+        frame.put(0, (byte) 5);
+        LiveMicrophone.processFrame(frame);
+        assertEquals(0, frame.get(0));
+        LiveMicrophone.end(first);
+        frame.put(0, (byte) 5);
+        LiveMicrophone.processFrame(frame);
+        assertEquals(5, frame.get(0));
+    }
+
     @Test public void pushToTalkDoesNothingWhenTheSettingIsOff() {
         Object recorder = new Object();
         LiveMicrophone.started(recorder);
