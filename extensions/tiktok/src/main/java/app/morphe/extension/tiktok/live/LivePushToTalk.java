@@ -16,6 +16,7 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -31,6 +32,10 @@ import app.morphe.extension.tiktok.settings.L10n;
  * <p>It follows the activity in front, so it is there from the broadcast screen to a sheet the
  * host opens over it and back. Releasing the button, leaving the activity or ending the LIVE
  * all return the microphone to silence, so a lost touch cannot leave the room listening.
+ *
+ * <p>The broadcast screen builds its view hierarchy after it resumes and can replace the
+ * content root's children, which removed a button added once. The layout listener puts it back
+ * and keeps it above anything TikTok adds later.
  */
 public final class LivePushToTalk {
     private static final int SIZE_DP = 64;
@@ -38,19 +43,28 @@ public final class LivePushToTalk {
 
     private static boolean active;
     private static boolean talking;
+    private static boolean paused;
     private static boolean following;
     private static Application application;
     private static WeakReference<View> buttonReference = new WeakReference<>(null);
     private static WeakReference<Activity> hostReference = new WeakReference<>(null);
+    private static WeakReference<ViewGroup> rootReference = new WeakReference<>(null);
+    private static ViewTreeObserver.OnGlobalLayoutListener layoutListener;
 
     private static final Application.ActivityLifecycleCallbacks CALLBACKS =
             new Application.ActivityLifecycleCallbacks() {
                 @Override public void onActivityResumed(Activity activity) {
-                    if (active) attach(activity);
+                    if (active) {
+                        paused = false;
+                        attach(activity);
+                    }
                 }
 
                 @Override public void onActivityPaused(Activity activity) {
-                    if (activity == hostReference.get()) detach();
+                    if (activity == hostReference.get()) {
+                        paused = true;
+                        detach();
+                    }
                 }
 
                 @Override public void onActivityCreated(Activity activity, Bundle state) { }
@@ -58,7 +72,10 @@ public final class LivePushToTalk {
                 @Override public void onActivityStopped(Activity activity) { }
                 @Override public void onActivitySaveInstanceState(Activity activity, Bundle state) { }
                 @Override public void onActivityDestroyed(Activity activity) {
-                    if (activity == hostReference.get()) detach();
+                    if (activity == hostReference.get()) {
+                        paused = true;
+                        detach();
+                    }
                 }
             };
 
@@ -72,6 +89,7 @@ public final class LivePushToTalk {
             }
             active = true;
             talking = false;
+            paused = false;
             follow();
             attach(Utils.getVisibleActivity());
         });
@@ -84,7 +102,9 @@ public final class LivePushToTalk {
             }
             active = false;
             talking = false;
+            paused = false;
             detach();
+            removeLayoutListener();
             if (application != null) {
                 application.unregisterActivityLifecycleCallbacks(CALLBACKS);
             }
@@ -108,7 +128,7 @@ public final class LivePushToTalk {
     }
 
     private static void attach(Activity activity) {
-        if (!active) {
+        if (!active || paused) {
             return;
         }
         try {
@@ -121,21 +141,84 @@ public final class LivePushToTalk {
             }
             View existing = buttonReference.get();
             if (existing != null && existing.getParent() == root) {
+                toFront(existing);
                 return;
             }
             detach();
             View button = create(activity);
-            int size = dp(activity, SIZE_DP);
-            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                    size, size, Gravity.START | Gravity.CENTER_VERTICAL);
-            params.leftMargin = dp(activity, MARGIN_DP);
-            root.addView(button, params);
+            root.addView(button, params(activity));
             buttonReference = new WeakReference<>(button);
             hostReference = new WeakReference<>(activity);
+            installLayoutListener(root);
             showState(button);
         } catch (Throwable failure) {
             Logger.printException(() -> "Could not show the LIVE push to talk button", failure);
         }
+    }
+
+    private static FrameLayout.LayoutParams params(Context context) {
+        int size = dp(context, SIZE_DP);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                size, size, Gravity.START | Gravity.CENTER_VERTICAL);
+        params.leftMargin = dp(context, MARGIN_DP);
+        return params;
+    }
+
+    /**
+     * The broadcast view can replace the content root's children. Every layout pass keeps the
+     * button a child of the root and at the front, so the room's own views cannot cover it.
+     */
+    private static void installLayoutListener(ViewGroup root) {
+        if (layoutListener != null && rootReference.get() == root) {
+            return;
+        }
+        removeLayoutListener();
+        rootReference = new WeakReference<>(root);
+        layoutListener = () -> {
+            if (!active || paused) {
+                return;
+            }
+            ViewGroup current = rootReference.get();
+            if (current == null) {
+                return;
+            }
+            View button = buttonReference.get();
+            if (button == null) {
+                return;
+            }
+            if (button.getParent() != current) {
+                if (button.getParent() instanceof ViewGroup) {
+                    ((ViewGroup) button.getParent()).removeView(button);
+                }
+                current.addView(button, params(current.getContext()));
+            }
+            toFront(button);
+        };
+        root.getViewTreeObserver().addOnGlobalLayoutListener(layoutListener);
+    }
+
+    /**
+     * Brings the button to the front only when something was added over it, since
+     * {@link View#bringToFront()} requests another layout and an unconditional call in the
+     * layout listener would keep the screen laying out forever.
+     */
+    private static void toFront(View button) {
+        if (!(button.getParent() instanceof ViewGroup)) {
+            return;
+        }
+        ViewGroup parent = (ViewGroup) button.getParent();
+        if (parent.getChildAt(parent.getChildCount() - 1) != button) {
+            button.bringToFront();
+        }
+    }
+
+    private static void removeLayoutListener() {
+        ViewGroup root = rootReference.get();
+        if (root != null && layoutListener != null) {
+            root.getViewTreeObserver().removeOnGlobalLayoutListener(layoutListener);
+        }
+        layoutListener = null;
+        rootReference = new WeakReference<>(null);
     }
 
     private static View create(Activity activity) {

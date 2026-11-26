@@ -236,6 +236,33 @@ public class LiveMicrophoneTest {
         controller.pause().stop().destroy();
     }
 
+    @Test public void pushToTalkPutsTheButtonBackWhenTheRoomRebuildsItsView() {
+        Settings.LIVE_PUSH_TO_TALK.save(true);
+        ActivityController<TestActivity> controller =
+                Robolectric.buildActivity(TestActivity.class).setup();
+        Activity activity = controller.get();
+        Utils.setActivity(activity);
+        Object recorder = new Object();
+        LiveMicrophone.started(recorder);
+        shadowOf(Looper.getMainLooper()).idle();
+
+        View button = findTalkButton(activity);
+        assertNotNull(button);
+        ViewGroup root = activity.findViewById(android.R.id.content);
+        root.removeView(button);
+        root.getViewTreeObserver().dispatchOnGlobalLayout();
+        assertNotNull(findTalkButton(activity));
+
+        controller.pause();
+        assertNull(findTalkButton(activity));
+        controller.resume();
+        assertNotNull(findTalkButton(activity));
+
+        LiveMicrophone.end(recorder);
+        shadowOf(Looper.getMainLooper()).idle();
+        controller.pause().stop().destroy();
+    }
+
     @Test public void pushToTalkButtonStaysAwayWhenTheSettingIsOff() {
         ActivityController<TestActivity> controller =
                 Robolectric.buildActivity(TestActivity.class).setup();
