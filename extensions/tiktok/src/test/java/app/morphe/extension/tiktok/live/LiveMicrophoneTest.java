@@ -17,6 +17,7 @@ import android.app.Activity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import app.morphe.extension.shared.Utils;
@@ -33,6 +34,8 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.AudioDeviceInfoBuilder;
 import org.robolectric.shadows.ShadowAudioManager;
+import org.robolectric.shadows.ShadowSettings;
+import org.robolectric.shadows.ShadowWindowManagerImpl;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -53,6 +56,7 @@ public class LiveMicrophoneTest {
         Settings.LIVE_BLUETOOTH_MICROPHONE.save(true);
         Settings.LIVE_SOUND_ISOLATION.save(false);
         Settings.LIVE_PUSH_TO_TALK.save(false);
+        ShadowSettings.setCanDrawOverlays(false);
     }
 
     @After public void tearDown() {
@@ -62,6 +66,7 @@ public class LiveMicrophoneTest {
         Settings.LIVE_BLUETOOTH_MICROPHONE.save(false);
         Settings.LIVE_SOUND_ISOLATION.save(false);
         Settings.LIVE_PUSH_TO_TALK.save(false);
+        ShadowSettings.setCanDrawOverlays(false);
     }
 
     @Test public void classicHeadsetUsesVoiceCaptureUntilTheLastRecorderEnds() {
@@ -234,6 +239,32 @@ public class LiveMicrophoneTest {
         shadowOf(Looper.getMainLooper()).idle();
         assertNull(findTalkButton(activity));
         controller.pause().stop().destroy();
+    }
+
+    @Test public void pushToTalkUsesASystemOverlayWhenAllowed() {
+        Settings.LIVE_PUSH_TO_TALK.save(true);
+        ShadowSettings.setCanDrawOverlays(true);
+        Object recorder = new Object();
+        LiveMicrophone.started(recorder);
+        shadowOf(Looper.getMainLooper()).idle();
+
+        WindowManager manager = (WindowManager) RuntimeEnvironment.getApplication()
+                .getSystemService(Context.WINDOW_SERVICE);
+        ShadowWindowManagerImpl shadowWindow = (ShadowWindowManagerImpl) shadowOf(manager);
+        List<View> views = shadowWindow.getViews();
+        assertEquals(1, views.size());
+        View button = views.get(0);
+        assertTrue(button instanceof TextView);
+        assertEquals("Talk", ((TextView) button).getText().toString());
+
+        button.dispatchTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 1, 1, 0));
+        assertFalse(LiveMicrophone.isSilent());
+        button.dispatchTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, 1, 1, 0));
+        assertTrue(LiveMicrophone.isSilent());
+
+        LiveMicrophone.end(recorder);
+        shadowOf(Looper.getMainLooper()).idle();
+        assertEquals(0, shadowWindow.getViews().size());
     }
 
     @Test public void pushToTalkPutsTheButtonBackWhenTheRoomRebuildsItsView() {

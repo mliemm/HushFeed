@@ -7,9 +7,13 @@ package app.morphe.extension.tiktok.live;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -17,6 +21,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -29,13 +34,13 @@ import app.morphe.extension.tiktok.settings.L10n;
 /**
  * The hold to talk button that sits over the LIVE while push to talk is on.
  *
- * <p>It follows the activity in front, so it is there from the broadcast screen to a sheet the
- * host opens over it and back. Releasing the button, leaving the activity or ending the LIVE
- * all return the microphone to silence, so a lost touch cannot leave the room listening.
+ * <p>The room can draw in a window of its own, which leaves a button added to the activity's
+ * content underneath it. The button therefore goes in a system overlay window when TikTok has
+ * the display over other apps permission, and falls back to the activity's content root when it
+ * does not. The permission page opens once per process when it is missing.
  *
- * <p>The broadcast screen builds its view hierarchy after it resumes and can replace the
- * content root's children, which removed a button added once. The layout listener puts it back
- * and keeps it above anything TikTok adds later.
+ * <p>Releasing the button, leaving the activity or ending the LIVE all return the microphone
+ * to silence, so a lost touch cannot leave the room listening.
  */
 public final class LivePushToTalk {
     private static final int SIZE_DP = 64;
@@ -45,17 +50,28 @@ public final class LivePushToTalk {
     private static boolean talking;
     private static boolean paused;
     private static boolean following;
+    private static boolean askedOverlayPermission;
     private static Application application;
     private static WeakReference<View> buttonReference = new WeakReference<>(null);
     private static WeakReference<Activity> hostReference = new WeakReference<>(null);
     private static WeakReference<ViewGroup> rootReference = new WeakReference<>(null);
     private static ViewTreeObserver.OnGlobalLayoutListener layoutListener;
+    private static View overlayView;
+    private static WindowManager overlayManager;
 
     private static final Application.ActivityLifecycleCallbacks CALLBACKS =
             new Application.ActivityLifecycleCallbacks() {
                 @Override public void onActivityResumed(Activity activity) {
-                    if (active) {
-                        paused = false;
+                    if (!active) {
+                        return;
+                    }
+                    paused = false;
+                    Context context = Utils.getContext();
+                    if (context != null && canOverlay(context)) {
+                        detach();
+                        removeLayoutListener();
+                        attachOverlay(context);
+                    } else {
                         attach(activity);
                     }
                 }
@@ -91,7 +107,13 @@ public final class LivePushToTalk {
             talking = false;
             paused = false;
             follow();
-            attach(Utils.getVisibleActivity());
+            Context context = Utils.getContext();
+            if (context != null && canOverlay(context)) {
+                attachOverlay(context);
+            } else {
+                if (context != null) requestOverlay(context);
+                attach(Utils.getVisibleActivity());
+            }
         });
     }
 
@@ -104,6 +126,7 @@ public final class LivePushToTalk {
             talking = false;
             paused = false;
             detach();
+            detachOverlay();
             removeLayoutListener();
             if (application != null) {
                 application.unregisterActivityLifecycleCallbacks(CALLBACKS);
@@ -111,6 +134,26 @@ public final class LivePushToTalk {
             application = null;
             following = false;
         });
+    }
+
+    private static boolean canOverlay(Context context) {
+        return android.provider.Settings.canDrawOverlays(context);
+    }
+
+    /** Opens the permission page once per process. Without it the in-app fallback still runs. */
+    private static void requestOverlay(Context context) {
+        if (askedOverlayPermission) {
+            return;
+        }
+        askedOverlayPermission = true;
+        try {
+            Intent intent = new Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:" + context.getPackageName()));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+        } catch (Throwable failure) {
+            Logger.printException(() -> "Could not open the display over other apps setting", failure);
+        }
     }
 
     private static void follow() {
@@ -127,8 +170,58 @@ public final class LivePushToTalk {
         following = true;
     }
 
+    private static void attachOverlay(Context context) {
+        if (overlayView != null) {
+            return;
+        }
+        try {
+            Context app = context.getApplicationContext();
+            WindowManager manager = (WindowManager) app.getSystemService(Context.WINDOW_SERVICE);
+            if (manager == null) {
+                return;
+            }
+            TextView button = create(app);
+            int type = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                    ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                    : WindowManager.LayoutParams.TYPE_PHONE;
+            WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                    dp(app, SIZE_DP), dp(app, SIZE_DP), type,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                            | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                            | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    PixelFormat.TRANSLUCENT);
+            params.gravity = Gravity.START | Gravity.CENTER_VERTICAL;
+            params.x = dp(app, MARGIN_DP);
+            manager.addView(button, params);
+            overlayView = button;
+            overlayManager = manager;
+            showState(button);
+        } catch (Throwable failure) {
+            Logger.printException(() -> "Could not show the LIVE push to talk overlay", failure);
+        }
+    }
+
+    private static void detachOverlay() {
+        if (overlayView == null) {
+            return;
+        }
+        try {
+            if (overlayManager != null) {
+                overlayManager.removeView(overlayView);
+            }
+        } catch (Throwable failure) {
+            Logger.printException(() -> "Could not hide the LIVE push to talk overlay", failure);
+        }
+        overlayView = null;
+        overlayManager = null;
+        if (talking) {
+            talking = false;
+            LiveMicrophone.setTalking(false);
+        }
+    }
+
     private static void attach(Activity activity) {
-        if (!active || paused) {
+        if (!active || paused || overlayView != null) {
             return;
         }
         try {
@@ -175,7 +268,7 @@ public final class LivePushToTalk {
         removeLayoutListener();
         rootReference = new WeakReference<>(root);
         layoutListener = () -> {
-            if (!active || paused) {
+            if (!active || paused || overlayView != null) {
                 return;
             }
             ViewGroup current = rootReference.get();
@@ -221,18 +314,18 @@ public final class LivePushToTalk {
         rootReference = new WeakReference<>(null);
     }
 
-    private static View create(Activity activity) {
-        TextView button = new TextView(activity);
+    private static TextView create(Context context) {
+        TextView button = new TextView(context);
         button.setGravity(Gravity.CENTER);
-        button.setText(L10n.t(activity, "Talk"));
+        button.setText(L10n.t(context, "Talk"));
         button.setTextColor(Color.WHITE);
         button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         button.setTypeface(Typeface.DEFAULT_BOLD);
         button.setAllCaps(false);
         button.setClickable(true);
         button.setFocusable(true);
-        button.setElevation(dp(activity, 6));
-        button.setContentDescription(L10n.t(activity, "Hold to talk"));
+        button.setElevation(dp(context, 6));
+        button.setContentDescription(L10n.t(context, "Hold to talk"));
         button.setOnTouchListener(LivePushToTalk::onTouch);
         return button;
     }
