@@ -17,15 +17,19 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Proxy;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
@@ -58,6 +62,9 @@ public final class LivePushToTalk {
     private static ViewTreeObserver.OnGlobalLayoutListener layoutListener;
     private static View overlayView;
     private static WindowManager overlayManager;
+    private static Window keyWindow;
+    private static Window.Callback keyInner;
+    private static Window.Callback keyProxy;
 
     private static final Application.ActivityLifecycleCallbacks CALLBACKS =
             new Application.ActivityLifecycleCallbacks() {
@@ -74,9 +81,13 @@ public final class LivePushToTalk {
                     } else {
                         attach(activity);
                     }
+                    watchKeys(activity);
                 }
 
                 @Override public void onActivityPaused(Activity activity) {
+                    if (activity.getWindow() == keyWindow) {
+                        unwatchKeys();
+                    }
                     if (activity == hostReference.get()) {
                         paused = true;
                         detach();
@@ -114,6 +125,7 @@ public final class LivePushToTalk {
                 if (context != null) requestOverlay(context);
                 attach(Utils.getVisibleActivity());
             }
+            watchKeys(Utils.getVisibleActivity());
         });
     }
 
@@ -128,12 +140,88 @@ public final class LivePushToTalk {
             detach();
             detachOverlay();
             removeLayoutListener();
+            unwatchKeys();
             if (application != null) {
                 application.unregisterActivityLifecycleCallbacks(CALLBACKS);
             }
             application = null;
             following = false;
         });
+    }
+
+    /**
+     * Volume Up is the talk key when no system overlay is showing. It gives the feature a
+     * path that needs no display over other apps permission; the button stays the visible
+     * control and the volume keys keep their normal meaning once the overlay is available.
+     */
+    private static void watchKeys(Activity activity) {
+        if (keyProxy != null || activity == null || activity.isFinishing() || activity.isDestroyed()) {
+            return;
+        }
+        Window window = activity.getWindow();
+        if (window == null || window.getCallback() == null) {
+            return;
+        }
+        Window.Callback inner = window.getCallback();
+        try {
+            Window.Callback proxy = (Window.Callback) Proxy.newProxyInstance(
+                    Window.Callback.class.getClassLoader(), new Class<?>[]{Window.Callback.class},
+                    (object, method, args) -> {
+                        if (active && overlayView == null && args != null && args.length == 1
+                                && args[0] instanceof KeyEvent
+                                && "dispatchKeyEvent".equals(method.getName())) {
+                            KeyEvent event = (KeyEvent) args[0];
+                            if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP) {
+                                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                                    talkTo(true);
+                                    return true;
+                                }
+                                if (event.getAction() == KeyEvent.ACTION_UP) {
+                                    talkTo(false);
+                                    return true;
+                                }
+                            }
+                        }
+                        try {
+                            return method.invoke(inner, args);
+                        } catch (InvocationTargetException failure) {
+                            throw failure.getCause() == null ? failure : failure.getCause();
+                        }
+                    });
+            window.setCallback(proxy);
+            keyWindow = window;
+            keyInner = inner;
+            keyProxy = proxy;
+        } catch (Throwable failure) {
+            Logger.printException(() -> "Could not watch the LIVE volume key", failure);
+        }
+    }
+
+    private static void unwatchKeys() {
+        Window window = keyWindow;
+        if (window != null && keyProxy != null && window.getCallback() == keyProxy) {
+            window.setCallback(keyInner);
+        }
+        keyWindow = null;
+        keyInner = null;
+        keyProxy = null;
+    }
+
+    /** The talk state without a view to repaint, for the volume key. */
+    private static void talkTo(boolean value) {
+        if (talking == value) {
+            return;
+        }
+        talking = value;
+        LiveMicrophone.setTalking(value);
+        View overlay = overlayView;
+        if (overlay != null) {
+            showState(overlay);
+        }
+        View button = buttonReference.get();
+        if (button != null) {
+            showState(button);
+        }
     }
 
     private static boolean canOverlay(Context context) {

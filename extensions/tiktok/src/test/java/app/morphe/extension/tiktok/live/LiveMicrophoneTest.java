@@ -14,9 +14,11 @@ import android.media.AudioManager;
 import android.media.MediaRecorder.AudioSource;
 import android.os.Looper;
 import android.app.Activity;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
@@ -265,6 +267,27 @@ public class LiveMicrophoneTest {
         LiveMicrophone.end(recorder);
         shadowOf(Looper.getMainLooper()).idle();
         assertEquals(0, shadowWindow.getViews().size());
+    }
+
+    @Test public void volumeUpTalksWithoutTheOverlayPermission() {
+        Settings.LIVE_PUSH_TO_TALK.save(true);
+        ActivityController<TestActivity> controller =
+                Robolectric.buildActivity(TestActivity.class).setup();
+        Activity activity = controller.get();
+        Utils.setActivity(activity);
+        Object recorder = new Object();
+        LiveMicrophone.started(recorder);
+        shadowOf(Looper.getMainLooper()).idle();
+
+        Window.Callback callback = activity.getWindow().getCallback();
+        assertTrue(callback.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_VOLUME_UP)));
+        assertFalse(LiveMicrophone.isSilent());
+        assertTrue(callback.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_VOLUME_UP)));
+        assertTrue(LiveMicrophone.isSilent());
+
+        LiveMicrophone.end(recorder);
+        shadowOf(Looper.getMainLooper()).idle();
+        controller.pause().stop().destroy();
     }
 
     @Test public void pushToTalkPutsTheButtonBackWhenTheRoomRebuildsItsView() {
