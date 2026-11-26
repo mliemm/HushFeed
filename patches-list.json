@@ -7,9 +7,9 @@
   "patches": [
     {
       "name": "AMOLED dark theme",
-      "description": "Makes TikTok's dark mode backgrounds pure black, or a dark color you pick in this patch's options. Black lets OLED screens switch those pixels off. Light mode doesn't change. The AMOLED dark mode switch in Hushfeed settings > App starts on, and turning it off brings TikTok's own dark grays back.",
+      "description": "Makes TikTok's dark mode backgrounds pure black, or a dark color you pick in this patch's options. Black lets OLED screens switch those pixels off. Light mode doesn't change. TikTok defaults to dark mode when no theme has been chosen. The AMOLED dark mode switch in Hushfeed settings > App starts on, and turning it off brings TikTok's own dark grays back.",
       "category": "Interface",
-      "use": false,
+      "use": true,
       "dependencies": [
         "Patch"
       ],
@@ -8395,7 +8395,7 @@
     },
     {
       "name": "LIVE microphone",
-      "description": "Lets a connected Bluetooth headset capture your LIVE, adds TikTok's own noise suppression, and puts a hold to talk button over the room. Bluetooth microphone and sound isolation start on. Push to talk starts off. Each has its own switch in Hushfeed settings > App.",
+      "description": "Lets a connected Bluetooth headset capture your LIVE, adds TikTok's own noise suppression, and puts a hold to talk button over the room. Bluetooth microphone and sound isolation and push to talk start on. Each has its own switch in Hushfeed settings > App.",
       "category": "Interface",
       "use": true,
       "dependencies": [
@@ -8455,7 +8455,7 @@
           "description": null,
           "required": false,
           "type": "kotlin.Boolean",
-          "default": false,
+          "default": true,
           "values": null
         }
       ]

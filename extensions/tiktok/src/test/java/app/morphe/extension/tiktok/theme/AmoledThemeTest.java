@@ -57,6 +57,16 @@ public class AmoledThemeTest {
     private static final String ACTIVITY_CENTER =
             "https://inapp.tiktokv.com/tpp/inapp/pns_product_activity_center/ac/home.html";
 
+    @Test public void defaultDarkModeKeepsAnExistingThemeChoice() {
+        android.content.SharedPreferences preferences = app().getSharedPreferences("theme-default-test", 0);
+        preferences.edit().clear().commit();
+        AmoledTheme.defaultDarkMode(preferences);
+        assertEquals(2, preferences.getInt("dark_mode", 1));
+        preferences.edit().putInt("dark_mode", 1).commit();
+        AmoledTheme.defaultDarkMode(preferences);
+        assertEquals(1, preferences.getInt("dark_mode", 2));
+    }
+
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
 
     @Before public void setUp() {

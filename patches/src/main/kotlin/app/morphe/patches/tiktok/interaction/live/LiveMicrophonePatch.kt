@@ -135,7 +135,7 @@ val liveMicrophonePatch = configurableBytecodePatch(
     name = PATCH,
     description = "Lets a connected Bluetooth headset capture your LIVE, adds TikTok's own noise " +
         "suppression, and puts a hold to talk button over the room. Bluetooth microphone and sound " +
-        "isolation start on. Push to talk starts off. Each has its " +
+        "isolation and push to talk start on. Each has its " +
         "own switch in Hushfeed settings > App.",
     default = true,
 ) {

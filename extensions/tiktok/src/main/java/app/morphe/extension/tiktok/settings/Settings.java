@@ -417,7 +417,7 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting LIVE_SOUND_ISOLATION =
             new BooleanSetting("live_sound_isolation", TRUE);
     public static final BooleanSetting LIVE_PUSH_TO_TALK =
-            new BooleanSetting("live_push_to_talk", FALSE);
+            new BooleanSetting("live_push_to_talk", TRUE);
     // The four Performance patches, in the default selection because each hook asks one of these
     // first. Off until the reader turns one on, and a paused build answers off. The splash, update
     // and traffic hooks act on TikTok's startup tasks, so they need a restart. The animated image

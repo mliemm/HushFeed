@@ -3640,7 +3640,7 @@
       "field": "LIVE_PUSH_TO_TALK",
       "key": "live_push_to_talk",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "live_record_quality": {
       "field": "LIVE_RECORD_QUALITY",

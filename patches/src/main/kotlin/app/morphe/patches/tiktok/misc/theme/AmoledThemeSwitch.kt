@@ -285,6 +285,21 @@ internal fun hookAmoledThemeSwitch(): AmoledThemeSwitchSites {
 internal fun amoledThemeSwitchPatch(active: () -> Boolean) = bytecodePatch {
     dependsOn(settingsPatch, sharedExtensionPatch)
     execute {
+        for ((owner, name) in listOf("LX/058S;" to "LJJIJL", "LX/0H70;" to "LJLJI")) {
+            val theme = mutableClassDefBy(owner).methods.singleOrNull { it.name == name }
+                ?: throw PatchException("AMOLED dark theme: TikTok's theme initializer was not found")
+            val instructions = theme.implementation!!.instructions
+            val preferences = instructions.indexOfFirst {
+                it.getReference<MethodReference>()?.toString() ==
+                    "LX/0AuT;->LIZJ(ILandroid/content/Context;Ljava/lang/String;)Landroid/content/SharedPreferences;"
+            }
+            if (preferences < 0 || instructions.getOrNull(preferences + 1)?.opcode != Opcode.MOVE_RESULT_OBJECT) {
+                throw PatchException("AMOLED dark theme: TikTok's theme preferences were not found")
+            }
+            val register = (instructions[preferences + 1] as OneRegisterInstruction).registerA
+            theme.addInstruction(preferences + 2,
+                "invoke-static/range { v$register .. v$register }, Lapp/morphe/extension/tiktok/theme/AmoledTheme;->defaultDarkMode(Landroid/content/SharedPreferences;)V")
+        }
         if (!active()) return@execute
         hookAmoledThemeSwitch()
         SettingsStatusLoadFingerprint.method.addInstruction(
