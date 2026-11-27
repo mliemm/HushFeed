@@ -2281,7 +2281,7 @@
       "field": "GHOST_MODE",
       "key": "ghost_mode",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "glass_bar_height": {
       "field": "GLASS_BAR_HEIGHT",

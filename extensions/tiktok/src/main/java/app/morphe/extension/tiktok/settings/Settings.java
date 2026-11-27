@@ -1745,7 +1745,7 @@ public class Settings extends BaseSettings {
     public static final StringSetting LIVE_FEED_COUNTRIES = new StringSetting("live_feed_countries", "");
 
     // Privacy.
-    public static final BooleanSetting GHOST_MODE = new BooleanSetting("ghost_mode", FALSE);
+    public static final BooleanSetting GHOST_MODE = new BooleanSetting("ghost_mode", TRUE);
     // Stops the client's own activity status report. On by default, and only meaningful while
     // Ghost mode is on, so it sits under that switch.
     public static final BooleanSetting GHOST_HIDE_ONLINE_STATUS =
