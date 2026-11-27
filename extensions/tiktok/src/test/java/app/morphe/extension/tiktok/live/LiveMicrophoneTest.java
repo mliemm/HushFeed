@@ -2,7 +2,6 @@ package app.morphe.extension.tiktok.live;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -15,12 +14,7 @@ import android.media.MediaRecorder.AudioSource;
 import android.os.Looper;
 import android.app.Activity;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
-import android.widget.TextView;
 
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
@@ -36,8 +30,6 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.AudioDeviceInfoBuilder;
 import org.robolectric.shadows.ShadowAudioManager;
-import org.robolectric.shadows.ShadowSettings;
-import org.robolectric.shadows.ShadowWindowManagerImpl;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -58,7 +50,6 @@ public class LiveMicrophoneTest {
         Settings.LIVE_BLUETOOTH_MICROPHONE.save(true);
         Settings.LIVE_SOUND_ISOLATION.save(false);
         Settings.LIVE_PUSH_TO_TALK.save(false);
-        ShadowSettings.setCanDrawOverlays(false);
     }
 
     @After public void tearDown() {
@@ -68,7 +59,6 @@ public class LiveMicrophoneTest {
         Settings.LIVE_BLUETOOTH_MICROPHONE.save(false);
         Settings.LIVE_SOUND_ISOLATION.save(false);
         Settings.LIVE_PUSH_TO_TALK.save(false);
-        ShadowSettings.setCanDrawOverlays(false);
     }
 
     @Test public void classicHeadsetUsesVoiceCaptureUntilTheLastRecorderEnds() {
@@ -218,58 +208,7 @@ public class LiveMicrophoneTest {
         assertFalse(recorder.suppression);
     }
 
-    @Test public void pushToTalkShowsAButtonWhileTheLiveRuns() {
-        Settings.LIVE_PUSH_TO_TALK.save(true);
-        ActivityController<TestActivity> controller =
-                Robolectric.buildActivity(TestActivity.class).setup();
-        Activity activity = controller.get();
-        Utils.setActivity(activity);
-        Object recorder = new Object();
-        LiveMicrophone.started(recorder);
-        shadowOf(Looper.getMainLooper()).idle();
-
-        View button = findTalkButton(activity);
-        assertNotNull(button);
-        assertTrue(LiveMicrophone.isSilent());
-
-        button.dispatchTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 1, 1, 0));
-        assertFalse(LiveMicrophone.isSilent());
-        button.dispatchTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, 1, 1, 0));
-        assertTrue(LiveMicrophone.isSilent());
-
-        LiveMicrophone.end(recorder);
-        shadowOf(Looper.getMainLooper()).idle();
-        assertNull(findTalkButton(activity));
-        controller.pause().stop().destroy();
-    }
-
-    @Test public void pushToTalkUsesASystemOverlayWhenAllowed() {
-        Settings.LIVE_PUSH_TO_TALK.save(true);
-        ShadowSettings.setCanDrawOverlays(true);
-        Object recorder = new Object();
-        LiveMicrophone.started(recorder);
-        shadowOf(Looper.getMainLooper()).idle();
-
-        WindowManager manager = (WindowManager) RuntimeEnvironment.getApplication()
-                .getSystemService(Context.WINDOW_SERVICE);
-        ShadowWindowManagerImpl shadowWindow = (ShadowWindowManagerImpl) shadowOf(manager);
-        List<View> views = shadowWindow.getViews();
-        assertEquals(1, views.size());
-        View button = views.get(0);
-        assertTrue(button instanceof TextView);
-        assertEquals("Talk", ((TextView) button).getText().toString());
-
-        button.dispatchTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 1, 1, 0));
-        assertFalse(LiveMicrophone.isSilent());
-        button.dispatchTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, 1, 1, 0));
-        assertTrue(LiveMicrophone.isSilent());
-
-        LiveMicrophone.end(recorder);
-        shadowOf(Looper.getMainLooper()).idle();
-        assertEquals(0, shadowWindow.getViews().size());
-    }
-
-    @Test public void volumeUpTalksWithoutTheOverlayPermission() {
+    @Test public void volumeUpHoldsTheMicrophoneOpen() {
         Settings.LIVE_PUSH_TO_TALK.save(true);
         ActivityController<TestActivity> controller =
                 Robolectric.buildActivity(TestActivity.class).setup();
@@ -290,7 +229,7 @@ public class LiveMicrophoneTest {
         controller.pause().stop().destroy();
     }
 
-    @Test public void pushToTalkPutsTheButtonBackWhenTheRoomRebuildsItsView() {
+    @Test public void pausingTheActivityReleasesTheKey() {
         Settings.LIVE_PUSH_TO_TALK.save(true);
         ActivityController<TestActivity> controller =
                 Robolectric.buildActivity(TestActivity.class).setup();
@@ -300,55 +239,18 @@ public class LiveMicrophoneTest {
         LiveMicrophone.started(recorder);
         shadowOf(Looper.getMainLooper()).idle();
 
-        View button = findTalkButton(activity);
-        assertNotNull(button);
-        ViewGroup root = activity.findViewById(android.R.id.content);
-        root.removeView(button);
-        root.getViewTreeObserver().dispatchOnGlobalLayout();
-        assertNotNull(findTalkButton(activity));
-
+        activity.getWindow().getCallback()
+                .dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_VOLUME_UP));
+        assertFalse(LiveMicrophone.isSilent());
         controller.pause();
-        assertNull(findTalkButton(activity));
-        controller.resume();
-        assertNotNull(findTalkButton(activity));
+        assertTrue(LiveMicrophone.isSilent());
 
         LiveMicrophone.end(recorder);
         shadowOf(Looper.getMainLooper()).idle();
-        controller.pause().stop().destroy();
-    }
-
-    @Test public void pushToTalkButtonStaysAwayWhenTheSettingIsOff() {
-        ActivityController<TestActivity> controller =
-                Robolectric.buildActivity(TestActivity.class).setup();
-        Activity activity = controller.get();
-        Utils.setActivity(activity);
-        Object recorder = new Object();
-        LiveMicrophone.started(recorder);
-        shadowOf(Looper.getMainLooper()).idle();
-
-        assertNull(findTalkButton(activity));
-
-        LiveMicrophone.end(recorder);
-        shadowOf(Looper.getMainLooper()).idle();
-        controller.pause().stop().destroy();
+        controller.stop().destroy();
     }
 
     public static final class TestActivity extends Activity {
-    }
-
-    private static View findTalkButton(Activity activity) {
-        ViewGroup root = activity.findViewById(android.R.id.content);
-        if (root == null) {
-            return null;
-        }
-        for (int index = 0; index < root.getChildCount(); index++) {
-            View child = root.getChildAt(index);
-            if (child instanceof TextView
-                    && "Talk".contentEquals(((TextView) child).getText())) {
-                return child;
-            }
-        }
-        return null;
     }
 
     public static final class FakeAudioDevice {
