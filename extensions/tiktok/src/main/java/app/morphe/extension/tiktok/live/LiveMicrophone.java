@@ -69,14 +69,41 @@ public final class LiveMicrophone {
      */
     public static void route(Object recorder) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            Route.begin(recorder);
+            boolean started = Route.begin(recorder);
+            Logger.printInfo(() -> "LIVE capture started in " + recorder.getClass().getName()
+                    + (started ? ", Bluetooth route on" : ", no Bluetooth route"));
         }
+    }
+
+    /** Lyrax's audio router code for a Bluetooth headset, which it routes through SCO. */
+    static final int ROUTER_BLUETOOTH_HEADSET = 8;
+
+    /**
+     * Lyrax's audio router asks for a device and a media mode. In media mode it puts the call
+     * mode back to normal and stops SCO, which takes the headset's microphone away again. While
+     * a headset carries a capture, the router is asked for the headset in communication mode.
+     */
+    public static int routerDevice(int device) {
+        if (!headsetCaptures()) {
+            return device;
+        }
+        Logger.printInfo(() -> "LIVE audio router asked for device " + device + ", routed to the Bluetooth headset");
+        return ROUTER_BLUETOOTH_HEADSET;
+    }
+
+    public static boolean routerMediaMode(boolean mediaMode) {
+        return mediaMode && !headsetCaptures();
+    }
+
+    private static boolean headsetCaptures() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && Route.isSelected();
     }
 
     /** A capture {@link #route} followed is stopping or being released. */
     public static void unroute(Object recorder) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             Route.end(recorder);
+            Logger.printInfo(() -> "LIVE capture ended in " + recorder.getClass().getName());
         }
     }
 
@@ -296,10 +323,10 @@ public final class LiveMicrophone {
                     selectedDevice = headset.getId();
                     ownsDevice = true;
                     final int type = headset.getType();
-                    Logger.printDebug(() -> "Requested LIVE Bluetooth audio device type " + type);
+                    Logger.printInfo(() -> "Requested LIVE Bluetooth audio device type " + type);
                 } else {
                     clearSelection();
-                    Logger.printDebug(() -> "Android declined the LIVE Bluetooth audio route");
+                    Logger.printInfo(() -> "Android declined the LIVE Bluetooth audio route");
                 }
             } catch (RuntimeException failure) {
                 clearSelection();

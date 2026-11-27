@@ -33,6 +33,7 @@ internal const val LYRAX_RECORD = "Lcom/ss/lyrax/audio/device/webrtc/WebRtcAudio
 private const val LYRAX_RECORD_THREAD =
     "Lcom/ss/lyrax/audio/device/webrtc/WebRtcAudioRecord\$AudioRecordThread;"
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/live/LiveMicrophone;"
+private const val LYRAX_ROUTER = "Lcom/ss/lyrax/audio/device/router/AudioRouteDeviceManager;"
 
 internal enum class CaptureCall(val nativeName: String, val returnType: String) {
     START("nativeStartRecording", "I"),
@@ -229,6 +230,21 @@ val liveMicrophonePatch = bytecodePatch(
         } ?: throw PatchException("$PATCH: Lyrax's LIVE record release was not found")
         release.addInstruction(0, "invoke-static/range {p0 .. p0}, $EXTENSION->unroute(Ljava/lang/Object;)V")
         NATIVE_CAPTURE_CALLS.forEach { (type, calls) -> mutableClassDefBy(type).followNativeCapture(calls) }
+
+        // Lyrax's audio router resets the call mode and stops SCO for a LIVE in media mode.
+        val router = mutableClassDefBy(LYRAX_ROUTER).methods.singleOrNull {
+            it.name == "setAudioRoute" && it.parameters.map { parameter -> parameter.type } == listOf("I", "Z")
+                && it.returnType == "I"
+        } ?: throw PatchException("$PATCH: Lyrax's audio router was not found")
+        router.addInstructions(
+            0,
+            """
+                invoke-static/range {p1 .. p1}, $EXTENSION->routerDevice(I)I
+                move-result p1
+                invoke-static/range {p2 .. p2}, $EXTENSION->routerMediaMode(Z)Z
+                move-result p2
+            """,
+        )
 
         val capture = mutableClassDefBy(LYRAX_RECORD_THREAD).methods.singleOrNull { method ->
             method.implementation?.instructions?.any {

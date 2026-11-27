@@ -91,6 +91,20 @@ public class LiveMicrophoneTest {
         assertEquals(AudioSource.MIC, LiveMicrophone.captureSource(AudioSource.MIC));
     }
 
+    @Test public void theAudioRouterKeepsTheHeadsetWhileItCarriesACapture() {
+        assertEquals(2, LiveMicrophone.routerDevice(2));
+        assertTrue(LiveMicrophone.routerMediaMode(true));
+
+        availableDevice(AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
+        LiveMicrophone.route(first);
+        assertEquals(LiveMicrophone.ROUTER_BLUETOOTH_HEADSET, LiveMicrophone.routerDevice(2));
+        assertFalse(LiveMicrophone.routerMediaMode(true));
+
+        LiveMicrophone.unroute(first);
+        assertEquals(16, LiveMicrophone.routerDevice(16));
+        assertTrue(LiveMicrophone.routerMediaMode(true));
+    }
+
     @Test public void reconnectSelectsAnLeAudioHeadset() {
         AudioDeviceInfo headset = availableDevice(AudioDeviceInfo.TYPE_BLE_HEADSET);
         assertTrue(LiveMicrophone.begin(first));
