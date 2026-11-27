@@ -222,6 +222,7 @@ public final class LiveRecordChip {
             registerCallbacks(activity);
             // Auto tap (#335) follows the same pages and keeps its own chip and checks.
             LiveAutoTap.roomResumed(activity);
+            LivePushToTalk.roomResumed(activity);
             // So does listening for your name in the room's sound (#424).
             LiveListen.roomResumed(activity);
             // A PiP room has no full-size resumed page. Its current fragment is selected by
@@ -443,13 +444,14 @@ public final class LiveRecordChip {
 
     /**
      * Hushfeed's own buttons over a LIVE room stack top to bottom in this order: the Record chip,
-     * Auto tap, the block button, Ghost mode's eye, then the room ID and connection line.
+     * Auto tap, the Talk button, the block button, Ghost mode's eye, then the room ID and connection line.
      */
     public static final int STACK_RECORD = 1;
     public static final int STACK_AUTO_TAP = 2;
-    public static final int STACK_BLOCK = 3;
-    public static final int STACK_UNSEEN = 4;
-    public static final int STACK_ROOM_INFO = 5;
+    public static final int STACK_TALK = 3;
+    public static final int STACK_BLOCK = 4;
+    public static final int STACK_UNSEEN = 5;
+    public static final int STACK_ROOM_INFO = 6;
 
     /** A stacked button's place in the stack, the top it asks for and the gap it keeps, in pixels. */
     private static final class StackSlot {

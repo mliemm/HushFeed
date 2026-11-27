@@ -8,27 +8,44 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.settings.L10n;
 
 /**
- * Hold Volume Up to talk while push to talk is on. The key is read from the visible activity's
- * window, so the room's own views and windows cannot get in the way and no permission is needed.
- *
- * <p>Releasing the key, pausing the activity or ending the LIVE all return the microphone to
- * silence, so a lost key up cannot leave the room listening.
+ * Push to talk in a LIVE room: hold the Talk chip or Volume Up to open the microphone, release
+ * to mute. The chip is one of Hushfeed's stacked room buttons, like Record, and shows only while
+ * a room page is in front and push to talk is on. Releasing, pausing the activity, leaving the
+ * room or ending the LIVE all return the microphone to silence.
  */
 public final class LivePushToTalk {
+    private static final long TICK_MS = 1000;
+    private static final int TOP_DP = 244;
+    private static final int GAP_DP = 8;
+    private static final Handler HANDLER = new Handler(Looper.getMainLooper());
+    private static final Runnable TICK = LivePushToTalk::tick;
+
     private static boolean active;
     private static boolean talking;
     private static boolean following;
     private static Application application;
+    private static WeakReference<Activity> host = new WeakReference<>(null);
+    private static TextView chip;
     private static Window keyWindow;
     private static Window.Callback keyInner;
     private static Window.Callback keyProxy;
@@ -45,13 +62,23 @@ public final class LivePushToTalk {
                     if (activity.getWindow() == keyWindow) {
                         unwatchKeys();
                     }
+                    if (activity == host.get()) {
+                        HANDLER.removeCallbacks(TICK);
+                        removeChip();
+                    }
                 }
 
                 @Override public void onActivityCreated(Activity activity, Bundle state) { }
                 @Override public void onActivityStarted(Activity activity) { }
                 @Override public void onActivityStopped(Activity activity) { }
                 @Override public void onActivitySaveInstanceState(Activity activity, Bundle state) { }
-                @Override public void onActivityDestroyed(Activity activity) { }
+                @Override public void onActivityDestroyed(Activity activity) {
+                    if (activity == host.get()) {
+                        HANDLER.removeCallbacks(TICK);
+                        removeChip();
+                        host = new WeakReference<>(null);
+                    }
+                }
             };
 
     private LivePushToTalk() {
@@ -64,7 +91,12 @@ public final class LivePushToTalk {
             }
             active = true;
             follow();
-            watchKeys(Utils.getVisibleActivity());
+            Activity visible = Utils.getVisibleActivity();
+            watchKeys(visible);
+            if (visible != null) {
+                host = new WeakReference<>(visible);
+                tick();
+            }
         });
     }
 
@@ -74,6 +106,8 @@ public final class LivePushToTalk {
                 return;
             }
             active = false;
+            HANDLER.removeCallbacks(TICK);
+            removeChip();
             unwatchKeys();
             if (application != null) {
                 application.unregisterActivityLifecycleCallbacks(CALLBACKS);
@@ -81,6 +115,113 @@ public final class LivePushToTalk {
             application = null;
             following = false;
         });
+    }
+
+    /** Called by the Record chip's room watch as a LIVE room page resumes in {@code activity}. */
+    static void roomResumed(Activity activity) {
+        try {
+            if (!active || activity == null) {
+                return;
+            }
+            host = new WeakReference<>(activity);
+            tick();
+        } catch (Throwable failure) {
+            Logger.printException(() -> "Could not set up the LIVE Talk button", failure);
+        }
+    }
+
+    private static void tick() {
+        HANDLER.removeCallbacks(TICK);
+        try {
+            Activity activity = host.get();
+            if (!active || activity == null || LiveRecordChip.pageInFront(activity) == null) {
+                removeChip();
+                return;
+            }
+            showChip(activity);
+            TextView view = chip;
+            if (view != null) {
+                view.setVisibility(LiveRecordChip.filmingScreen() ? View.INVISIBLE : View.VISIBLE);
+                LiveRecordChip.restack((ViewGroup) view.getParent());
+            }
+            HANDLER.postDelayed(TICK, TICK_MS);
+        } catch (Throwable failure) {
+            Logger.printException(() -> "Could not check the LIVE room for the Talk button", failure);
+        }
+    }
+
+    private static int dp(Context context, int value) {
+        return Math.round(value * context.getResources().getDisplayMetrics().density);
+    }
+
+    private static void showChip(Activity activity) {
+        if (chip != null && chip.getContext() == activity && chip.getParent() != null
+                && !LiveRecordChip.drawnAtOtherSize(chip)) {
+            return;
+        }
+        removeChip();
+        ViewGroup content = activity.findViewById(android.R.id.content);
+        if (content == null) {
+            return;
+        }
+        TextView view = new TextView(activity);
+        LiveRecordChip.styleChip(view);
+        view.setOnTouchListener(LivePushToTalk::onTouch);
+        LiveRecordChip.markStacked(view, LiveRecordChip.STACK_TALK, dp(activity, TOP_DP), dp(activity, GAP_DP));
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.TOP | Gravity.END);
+        params.topMargin = dp(activity, TOP_DP);
+        params.rightMargin = dp(activity, 12);
+        content.addView(view, params);
+        chip = view;
+        showState();
+    }
+
+    private static void removeChip() {
+        talkTo(false);
+        TextView view = chip;
+        chip = null;
+        if (view != null && view.getParent() instanceof ViewGroup) {
+            ((ViewGroup) view.getParent()).removeView(view);
+        }
+    }
+
+    private static boolean onTouch(View view, MotionEvent event) {
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                if (view.getParent() != null) {
+                    view.getParent().requestDisallowInterceptTouchEvent(true);
+                }
+                talkTo(true);
+                return true;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                talkTo(false);
+                return true;
+            default:
+                return true;
+        }
+    }
+
+    private static void talkTo(boolean value) {
+        if (talking == value) {
+            return;
+        }
+        talking = value;
+        LiveMicrophone.setTalking(value);
+        showState();
+    }
+
+    private static void showState() {
+        TextView view = chip;
+        if (view == null) {
+            return;
+        }
+        Context context = view.getContext();
+        view.setText(L10n.t(context, talking ? "Talking" : "Hold to talk"));
+        view.setContentDescription(L10n.t(context, talking ? "Talking" : "Hold to talk"));
+        view.setAlpha(talking ? 1f : 0.85f);
     }
 
     private static void watchKeys(Activity activity) {
@@ -135,14 +276,6 @@ public final class LivePushToTalk {
         keyInner = null;
         keyProxy = null;
         talkTo(false);
-    }
-
-    private static void talkTo(boolean value) {
-        if (talking == value) {
-            return;
-        }
-        talking = value;
-        LiveMicrophone.setTalking(value);
     }
 
     private static void follow() {

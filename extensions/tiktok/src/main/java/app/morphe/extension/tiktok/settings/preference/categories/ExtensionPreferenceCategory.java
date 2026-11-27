@@ -580,8 +580,8 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
             addPreference(new TogglePreference(
                     context,
                     "Push to talk for LIVE",
-                    "Hold Volume Up while you broadcast to let the LIVE hear you, and release it "
-                            + "to mute. The LIVE is muted until you press it.",
+                    "Adds a Talk button to the LIVE room while you broadcast. Hold it, or hold "
+                            + "Volume Up, to let the LIVE hear you, and release to mute. The LIVE is muted until you hold it.",
                     Settings.LIVE_PUSH_TO_TALK
             ));
         }

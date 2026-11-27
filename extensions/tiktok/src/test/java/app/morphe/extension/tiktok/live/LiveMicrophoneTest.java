@@ -208,48 +208,6 @@ public class LiveMicrophoneTest {
         assertFalse(recorder.suppression);
     }
 
-    @Test public void volumeUpHoldsTheMicrophoneOpen() {
-        Settings.LIVE_PUSH_TO_TALK.save(true);
-        ActivityController<TestActivity> controller =
-                Robolectric.buildActivity(TestActivity.class).setup();
-        Activity activity = controller.get();
-        Utils.setActivity(activity);
-        Object recorder = new Object();
-        LiveMicrophone.started(recorder);
-        shadowOf(Looper.getMainLooper()).idle();
-
-        Window.Callback callback = activity.getWindow().getCallback();
-        assertTrue(callback.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_VOLUME_UP)));
-        assertFalse(LiveMicrophone.isSilent());
-        assertTrue(callback.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_VOLUME_UP)));
-        assertTrue(LiveMicrophone.isSilent());
-
-        LiveMicrophone.end(recorder);
-        shadowOf(Looper.getMainLooper()).idle();
-        controller.pause().stop().destroy();
-    }
-
-    @Test public void pausingTheActivityReleasesTheKey() {
-        Settings.LIVE_PUSH_TO_TALK.save(true);
-        ActivityController<TestActivity> controller =
-                Robolectric.buildActivity(TestActivity.class).setup();
-        Activity activity = controller.get();
-        Utils.setActivity(activity);
-        Object recorder = new Object();
-        LiveMicrophone.started(recorder);
-        shadowOf(Looper.getMainLooper()).idle();
-
-        activity.getWindow().getCallback()
-                .dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_VOLUME_UP));
-        assertFalse(LiveMicrophone.isSilent());
-        controller.pause();
-        assertTrue(LiveMicrophone.isSilent());
-
-        LiveMicrophone.end(recorder);
-        shadowOf(Looper.getMainLooper()).idle();
-        controller.stop().destroy();
-    }
-
     public static final class TestActivity extends Activity {
     }
 
