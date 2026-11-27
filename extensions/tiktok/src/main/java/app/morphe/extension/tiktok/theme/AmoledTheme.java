@@ -6,6 +6,7 @@ package app.morphe.extension.tiktok.theme;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.util.TypedValue;
 
@@ -36,6 +37,11 @@ import app.morphe.extension.tiktok.settings.SettingsStatus;
  * stays on.
  */
 public final class AmoledTheme {
+    public static void defaultDarkMode(SharedPreferences preferences) {
+        if (preferences != null && !preferences.contains("dark_mode")) {
+            preferences.edit().putInt("dark_mode", 2).apply();
+        }
+    }
     static final String HOOK_FAMILY = "amoled dark mode";
     static final String STOCK_ATTRIBUTE = "hushfeed_amoled_stock_";
     static final String RESTORE_STYLE = "hushfeed_amoled_restore_";

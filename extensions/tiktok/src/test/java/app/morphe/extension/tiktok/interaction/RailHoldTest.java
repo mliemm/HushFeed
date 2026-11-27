@@ -56,6 +56,7 @@ public class RailHoldTest {
         Settings.LONG_PRESS_ACTION.resetToDefault();
         Settings.EDGE_SEEK.resetToDefault();
         Settings.EDGE_SEEK_SECONDS.resetToDefault();
+        Settings.HOLD_SAVE_TO_DOWNLOAD.save(false);
         RailHold.resetForTests();
         HookStatus.clear();
         // A video another test left playing would be the one the Favorites hold saves.

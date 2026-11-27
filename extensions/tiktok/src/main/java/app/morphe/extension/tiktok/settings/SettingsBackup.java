@@ -130,6 +130,16 @@ public final class SettingsBackup {
         return setting.includeWithImportExport || setting == BaseSettings.DEBUG_LOG_FILTERS;
     }
 
+    public static boolean hasChangesToReset() {
+        Settings.REGION_SPOOF.get();
+        for (Setting<?> setting : Setting.allLoadedSettings()) {
+            if ((included(setting) || setting == Settings.NETWORK_PROXY_USER
+                    || setting == Settings.NETWORK_PROXY_PASSWORD) && !setting.isSetToDefault()) return true;
+        }
+        return FeatureGateLabStore.masterEnabled() || FeatureGateLabStore.warningAcknowledged()
+                || !FeatureGateLabStore.rules().isEmpty();
+    }
+
     /** What a picked file's network proxy came to on this phone. */
     public enum ProxyHold {
         /** Restored as the file has it. */

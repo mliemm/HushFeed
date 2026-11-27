@@ -133,6 +133,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
     /** Set when a search result opens its page, where its setting may change. */
     private boolean searchIndexStale;
     private final List<Preference> searchRows = new ArrayList<>();
+    private SettingsBackupPreference resetShortcut;
     /** The search the rows below the box show, trimmed. */
     private String shownSearch = "";
     private SettingsSearchInputPreference searchInput;
@@ -1771,6 +1772,10 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         });
         screen.addPreference(viewToggle);
 
+        resetShortcut = SettingsBackupPreference.resetShortcut(this);
+        resetShortcut.setOrder(-800);
+        refreshResetShortcut();
+
         for (Section section : new Section[]{Section.FEED_FILTER, Section.FEED_NAVIGATION,
                 Section.INTERFACE, Section.PLAYBACK, Section.SCREEN_TIME, Section.COMMENTS,
                 Section.INBOX, Section.DOWNLOADS, Section.SHARE, Section.PRIVACY, Section.BEHAVIOR,
@@ -1795,9 +1800,23 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         // Search results occupy the space between the field and these category rows.
         for (int index = 0; index < screen.getPreferenceCount(); index++) {
             Preference row = screen.getPreference(index);
-            if (row != pageHeader && row != searchEntry && row != viewToggle) row.setOrder(10000 + index);
+            if (row != pageHeader && row != searchEntry && row != viewToggle && row != resetShortcut) row.setOrder(10000 + index);
         }
         if (settingsAsList()) showAsList(true);
+    }
+
+    private void refreshResetShortcut() {
+        PreferenceScreen screen = getPreferenceScreen();
+        if (screen == null || resetShortcut == null) return;
+        boolean present = screen.findPreference("settings_reset_shortcut") != null;
+        boolean changed = app.morphe.extension.tiktok.settings.SettingsBackup.hasChangesToReset();
+        if (changed && !present) screen.addPreference(resetShortcut);
+        else if (!changed && present) screen.removePreference(resetShortcut);
+    }
+
+    @Override protected void updateUIAvailability() {
+        super.updateUIAvailability();
+        refreshResetShortcut();
     }
 
     /** Whether the home page shows every page's rows in one list. Pause doesn't change it. */
@@ -2274,7 +2293,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         }
     }
 
-    void refreshBackupSettings() { updateUIToSettingValues(); }
+    void refreshBackupSettings() { updateUIToSettingValues(); refreshResetShortcut(); }
 
     /**
      * The settings page in front now, or null. After a rotation or a return from the file picker
@@ -2469,6 +2488,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
     public void onResume() {
         super.onResume();
         activeFragment = this;
+        refreshResetShortcut();
         refreshStatusCard();
         // Back from a section onto the master menu: whatever was changed there is owed here.
         refreshRestartPending();

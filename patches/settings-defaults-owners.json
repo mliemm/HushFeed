@@ -643,6 +643,11 @@
       "LIVE_NAME_ALERTS_LISTEN",
       "REMEMBERED_LIVE_QUALITY"
     ],
+    "LIVE microphone": [
+      "LIVE_BLUETOOTH_MICROPHONE",
+      "LIVE_SOUND_ISOLATION",
+      "LIVE_PUSH_TO_TALK"
+    ],
     "Location access governor": [
       "BLOCK_LOCATION"
     ],

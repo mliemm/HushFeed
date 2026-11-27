@@ -3096,3 +3096,12 @@ Unavailable saved video,不可用的收藏视频
 Posted %1$s,发布于 %1$s
 Remembered %1$s,记住于 %1$s
 Unavailable since %1$s,自 %1$s 起不可用
+Bluetooth microphone for LIVE,LIVE 蓝牙麦克风
+Connect your earbuds before starting a LIVE to use their microphone. Bluetooth call audio can change how playback sounds.,在开始 LIVE 前连接耳机，即可使用耳机麦克风。蓝牙通话模式可能会改变播放音质.
+Sound isolation for LIVE,LIVE 声音隔离
+"Turns on TikTok's own microphone noise suppression while you broadcast, so steady sounds like fans and traffic are quieter. It can make your voice sound different.",直播时开启 TikTok 自带的麦克风降噪，风扇、车流等持续噪音会变小。你的声音听起来可能有所不同.
+Push to talk for LIVE,LIVE 按住说话
+"Adds a Talk button while you broadcast. Hold it to let the LIVE hear you, and release it to mute. The LIVE is muted until you press it.",直播时添加 Talk 按钮。按住让观众听到你，松开即静音。未按下时直播处于静音状态.
+Talk,说话
+Hold to talk,按住说话
+Talking,正在说话

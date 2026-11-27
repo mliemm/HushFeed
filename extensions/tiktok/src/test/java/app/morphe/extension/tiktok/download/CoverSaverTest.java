@@ -16,6 +16,7 @@ import app.morphe.extension.tiktok.settings.SettingsStatus;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +31,10 @@ import org.robolectric.shadows.ShadowToast;
 @Config(sdk = 28, qualifiers = "en")
 public class CoverSaverTest {
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
+
+    @Before public void startOff() {
+        Settings.SAVE_COVER_BUTTON.save(false);
+    }
 
     @After public void reset() {
         Settings.DOWNLOAD_COVER.resetToDefault();

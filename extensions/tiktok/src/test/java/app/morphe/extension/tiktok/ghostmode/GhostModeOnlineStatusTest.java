@@ -61,11 +61,16 @@ public class GhostModeOnlineStatusTest {
         Utils.setActivity(null);
     }
 
-    @Test public void theSwitchIsOffByDefaultAndTheReportGoesThrough() {
-        assertFalse(Settings.GHOST_HIDE_ONLINE_STATUS.defaultValue);
-        assertFalse(Settings.GHOST_HIDE_ONLINE_STATUS.savedValue());
+    @Test public void theSwitchIsOnByDefaultSoGhostModeHoldsTheReportBack() {
+        assertTrue(Settings.GHOST_HIDE_ONLINE_STATUS.defaultValue);
+        Settings.GHOST_HIDE_ONLINE_STATUS.resetToDefault();
         Settings.GHOST_MODE.save(true);
-        assertFalse("Ghost mode alone must leave online status visible", GhostMode.shouldBlockOnlineStatus());
+        assertTrue("Ghost mode alone must hide online status", GhostMode.shouldBlockOnlineStatus());
+    }
+
+    @Test public void withTheSwitchOffGhostModeLeavesTheReportAlone() {
+        Settings.GHOST_MODE.save(true);
+        assertFalse(GhostMode.shouldBlockOnlineStatus());
     }
 
     @Test public void bothSwitchesOnHoldsTheReportBack() {

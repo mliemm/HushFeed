@@ -3096,3 +3096,12 @@ Unavailable saved video,Video đã lưu không khả dụng
 Posted %1$s,Đăng ngày %1$s
 Remembered %1$s,Ghi nhớ ngày %1$s
 Unavailable since %1$s,Không khả dụng từ %1$s
+Bluetooth microphone for LIVE,Micrô Bluetooth cho LIVE
+Connect your earbuds before starting a LIVE to use their microphone. Bluetooth call audio can change how playback sounds.,Kết nối tai nghe trước khi bắt đầu LIVE để dùng micrô của tai nghe. Chế độ gọi qua Bluetooth có thể làm thay đổi âm thanh khi phát.
+Sound isolation for LIVE,Cách ly âm thanh cho LIVE
+"Turns on TikTok's own microphone noise suppression while you broadcast, so steady sounds like fans and traffic are quieter. It can make your voice sound different.","Bật tính năng giảm tiếng ồn micrô của TikTok khi bạn phát trực tiếp, để những âm thanh đều như quạt và xe cộ nhỏ hơn. Giọng bạn có thể nghe khác đi."
+Push to talk for LIVE,Nhấn để nói trên LIVE
+"Adds a Talk button while you broadcast. Hold it to let the LIVE hear you, and release it to mute. The LIVE is muted until you press it.",Thêm nút Talk khi bạn phát trực tiếp. Giữ nút để LIVE nghe thấy bạn và thả ra để tắt micrô. LIVE sẽ tắt tiếng cho đến khi bạn nhấn nút.
+Talk,Nói
+Hold to talk,Giữ để nói
+Talking,Đang nói

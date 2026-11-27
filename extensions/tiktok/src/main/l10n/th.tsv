@@ -3274,3 +3274,12 @@ Unavailable saved video	วิดีโอที่บันทึกไว้�
 Posted %1$s	โพสต์เมื่อ %1$s
 Remembered %1$s	จำไว้เมื่อ %1$s
 Unavailable since %1$s	ไม่พร้อมใช้งานตั้งแต่ %1$s
+Bluetooth microphone for LIVE	ไมโครโฟน Bluetooth สำหรับ LIVE
+Connect your earbuds before starting a LIVE to use their microphone. Bluetooth call audio can change how playback sounds.	เชื่อมต่อหูฟังก่อนเริ่ม LIVE เพื่อใช้ไมโครโฟนของหูฟัง โหมดการโทรผ่าน Bluetooth อาจทำให้เสียงที่เล่นเปลี่ยนไป
+Sound isolation for LIVE	ตัดเสียงรบกวนสำหรับ LIVE
+Turns on TikTok's own microphone noise suppression while you broadcast, so steady sounds like fans and traffic are quieter. It can make your voice sound different.	เปิดการลดเสียงรบกวนจากไมโครโฟนของ TikTok ขณะไลฟ์ เสียงต่อเนื่องอย่างพัดลมและการจราจรจะเบาลง เสียงของคุณอาจฟังดูเปลี่ยนไป
+Push to talk for LIVE	กดเพื่อพูดใน LIVE
+Adds a Talk button while you broadcast. Hold it to let the LIVE hear you, and release it to mute. The LIVE is muted until you press it.	เพิ่มปุ่ม Talk ขณะไลฟ์ กดค้างไว้ให้ LIVE ได้ยินคุณ แล้วปล่อยเพื่อปิดไมโครโฟน LIVE จะปิดเสียงจนกว่าคุณจะกด
+Talk	พูด
+Hold to talk	กดค้างเพื่อพูด
+Talking	กำลังพูด

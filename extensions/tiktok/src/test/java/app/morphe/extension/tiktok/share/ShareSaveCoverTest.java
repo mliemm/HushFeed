@@ -115,7 +115,7 @@ public class ShareSaveCoverTest {
     private static AwemeSharePackage sheet(String id) { return new AwemeSharePackage(new Post(id, true)); }
 
     @Test public void goesRightAfterDownloadOnceAndKeepsTheNativeRowAsItWas() {
-        assertFalse(Settings.SAVE_COVER_BUTTON.defaultValue);
+        assertTrue(Settings.SAVE_COVER_BUTTON.defaultValue);
         AwemeSharePackage sheet = sheet("1");
         List<Object> nativeRow = row();
         List<?> finished = ShareSaveCover.actions(sheet, nativeRow);

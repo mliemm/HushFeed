@@ -151,8 +151,8 @@ public class ShareSaveEpisodesTest {
 
     @Test public void switchedOffUnpatchedPausedAndHiddenGetNoButton() {
         List<Object> nativeRow = row();
-        Settings.SAVE_EPISODES_BUTTON.resetToDefault();
-        assertSame("the switch starts off", nativeRow, ShareSaveEpisodes.actions(episode("6"), nativeRow));
+        Settings.SAVE_EPISODES_BUTTON.save(false);
+        assertSame("switched off", nativeRow, ShareSaveEpisodes.actions(episode("6"), nativeRow));
         Settings.SAVE_EPISODES_BUTTON.save(true);
         SettingsStatus.advancedDownloadsEnabled = false;
         assertSame("needs Advanced downloads", nativeRow, ShareSaveEpisodes.actions(episode("6"), nativeRow));

@@ -104,6 +104,13 @@ public final class SettingsBackupPreference extends Preference
         addTo(fragment, (android.preference.PreferenceGroup) screen);
     }
 
+    static SettingsBackupPreference resetShortcut(TikTokPreferenceFragment fragment) {
+        SettingsBackupPreference row = new SettingsBackupPreference(fragment, RESET, "Reset settings", "");
+        row.setKey("settings_reset_shortcut");
+        ROWS.add(new WeakReference<>(row));
+        return row;
+    }
+
     public static void addTo(TikTokPreferenceFragment fragment, android.preference.PreferenceGroup screen) {
         int order = screen.getPreferenceCount();
         for (Object[] row : new Object[][]{

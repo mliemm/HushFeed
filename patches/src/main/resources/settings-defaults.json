@@ -647,6 +647,11 @@
       "live_name_alerts_listen",
       "remembered_live_quality"
     ],
+    "LIVE microphone": [
+      "live_bluetooth_microphone",
+      "live_sound_isolation",
+      "live_push_to_talk"
+    ],
     "Lift text length limits": [
       "lift_length_limits"
     ],
@@ -1776,7 +1781,7 @@
       "field": "DOWNLOAD_BUTTON",
       "key": "download_button",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "download_button_position": {
       "field": "DOWNLOAD_BUTTON_POSITION",
@@ -1908,7 +1913,7 @@
       "field": "DOWNLOAD_WATERMARK_FALLBACK",
       "key": "download_watermark_fallback",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "download_without_sound": {
       "field": "DOWNLOAD_WITHOUT_SOUND",
@@ -2240,13 +2245,13 @@
       "field": "GHOST_HIDE_LIVE_VIEWS",
       "key": "ghost_hide_live_views",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "ghost_hide_online_status": {
       "field": "GHOST_HIDE_ONLINE_STATUS",
       "key": "ghost_hide_online_status",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "ghost_hide_profile_visits": {
       "field": "GHOST_HIDE_PROFILE_VISITS",
@@ -2276,7 +2281,7 @@
       "field": "GHOST_MODE",
       "key": "ghost_mode",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "glass_bar_height": {
       "field": "GLASS_BAR_HEIGHT",
@@ -3278,7 +3283,7 @@
       "field": "HOLD_SAVE_TO_DOWNLOAD",
       "key": "hold_save_to_download",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "hold_speed": {
       "field": "HOLD_SPEED",
@@ -3548,6 +3553,12 @@
       "type": "string",
       "default": "4"
     },
+    "live_bluetooth_microphone": {
+      "field": "LIVE_BLUETOOTH_MICROPHONE",
+      "key": "live_bluetooth_microphone",
+      "type": "boolean",
+      "default": true
+    },
     "live_button_size": {
       "field": "LIVE_BUTTON_SIZE",
       "key": "live_button_size",
@@ -3656,6 +3667,12 @@
       "type": "boolean",
       "default": false
     },
+    "live_push_to_talk": {
+      "field": "LIVE_PUSH_TO_TALK",
+      "key": "live_push_to_talk",
+      "type": "boolean",
+      "default": true
+    },
     "live_record_quality": {
       "field": "LIVE_RECORD_QUALITY",
       "key": "live_record_quality",
@@ -3679,6 +3696,12 @@
       "key": "live_running_time",
       "type": "boolean",
       "default": false
+    },
+    "live_sound_isolation": {
+      "field": "LIVE_SOUND_ISOLATION",
+      "key": "live_sound_isolation",
+      "type": "boolean",
+      "default": true
     },
     "live_start_quality": {
       "field": "LIVE_START_QUALITY",
@@ -4112,7 +4135,7 @@
       "field": "PICK_GRID_VIDEOS",
       "key": "pick_grid_videos",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "picture_in_picture": {
       "field": "PICTURE_IN_PICTURE",
@@ -4406,31 +4429,31 @@
       "field": "SAVE_COVER_BUTTON",
       "key": "save_cover_button",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "save_episodes_button": {
       "field": "SAVE_EPISODES_BUTTON",
       "key": "save_episodes_button",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "save_profile_picture": {
       "field": "SAVE_PROFILE_PICTURE",
       "key": "save_profile_picture",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "save_story": {
       "field": "SAVE_STORY",
       "key": "save_story",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "save_story_from_share": {
       "field": "SAVE_STORY_FROM_SHARE",
       "key": "save_story_from_share",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "save_story_pick": {
       "field": "SAVE_STORY_PICK",

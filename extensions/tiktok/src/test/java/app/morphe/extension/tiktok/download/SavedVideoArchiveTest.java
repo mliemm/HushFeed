@@ -76,6 +76,7 @@ public class SavedVideoArchiveTest {
         oldSubtitles = Settings.DOWNLOAD_SUBTITLES.get(); oldPath = Settings.DOWNLOAD_VIDEO_PATH.get();
         oldTemplate = Settings.DOWNLOAD_VIDEO_FILENAME_TEMPLATE.get(); oldQuality = Settings.DOWNLOAD_VIDEO_QUALITY.get();
         Settings.DOWNLOAD_DETAILS.save(true); Settings.CHECK_SAVED_VIDEOS.save(true);
+        Settings.SAVE_COVER_BUTTON.save(false); Settings.DOWNLOAD_WATERMARK_FALLBACK.save(false);
         Settings.DOWNLOAD_WITHOUT_SOUND.save(false); Settings.DOWNLOAD_AUDIO_TRACK.save(false);
         Settings.DOWNLOAD_SUBTITLES.save(false); Settings.DOWNLOAD_VIDEO_PATH.save(FOLDER);
         Settings.DOWNLOAD_VIDEO_FILENAME_TEMPLATE.save("{creator}/{video_id}");
@@ -147,6 +148,7 @@ public class SavedVideoArchiveTest {
         } finally {
             if (oldHttps != null) handlers.put("https", oldHttps);
             Settings.DOWNLOAD_PROGRESS.save(oldProgress);
+            Settings.SAVE_COVER_BUTTON.resetToDefault(); Settings.DOWNLOAD_WATERMARK_FALLBACK.resetToDefault();
             Settings.EXTERNAL_DOWNLOADER_PACKAGE.save(oldExternal);
             Settings.DOWNLOAD_DETAILS.save(oldDetails); Settings.CHECK_SAVED_VIDEOS.save(oldCheck);
             Settings.DOWNLOAD_WITHOUT_SOUND.save(oldMuted); Settings.DOWNLOAD_AUDIO_TRACK.save(oldAudio);

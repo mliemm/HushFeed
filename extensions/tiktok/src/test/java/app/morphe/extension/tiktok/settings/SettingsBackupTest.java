@@ -108,6 +108,37 @@ public class SettingsBackupTest {
         assertEquals("true", rule.value);
     }
 
+    @Test public void resetShortcutTracksChangedSettingsAndRunsReset() throws Exception {
+        try (var owner = Robolectric.buildActivity(
+                app.morphe.extension.tiktok.captions.CaptionToolsTest.CaptionActivity.class).setup().visible()) {
+            var activity = owner.get();
+            Utils.setContext(activity);
+            var fragment = new TikTokPreferenceFragment();
+            activity.getFragmentManager().beginTransaction().replace(android.R.id.content, fragment).commit();
+            activity.getFragmentManager().executePendingTransactions();
+            assertNull(fragment.findPreference("settings_reset_shortcut"));
+            Settings.MAX_VIDEO_SECONDS.save(73);
+            fragment.onResume();
+            Preference shortcut = fragment.findPreference("settings_reset_shortcut");
+            assertNotNull(shortcut);
+            shortcut.getOnPreferenceClickListener().onPreferenceClick(shortcut);
+            waitFor("Settings are back to their defaults. Restart TikTok to apply all changes.");
+            assertEquals(0, (int) Settings.MAX_VIDEO_SECONDS.get());
+            assertNull(fragment.findPreference("settings_reset_shortcut"));
+        }
+    }
+
+    @Test public void resetAvailabilityIncludesLabAndProxyCredentials() {
+        assertFalse(SettingsBackup.hasChangesToReset());
+        Settings.NETWORK_PROXY_USER.save("user");
+        assertTrue(SettingsBackup.hasChangesToReset());
+        Settings.NETWORK_PROXY_USER.resetToDefault();
+        FeatureGateLabStore.saveRule("abmock", "test_gate", "BOOLEAN", "true", true);
+        assertTrue(SettingsBackup.hasChangesToReset());
+        FeatureGateLabStore.resetAllLabData();
+        assertFalse(SettingsBackup.hasChangesToReset());
+    }
+
     @Test public void aBackupFromBeforeTheDownloadPathSplitFillsInTheThreeDestinations()
             throws Exception {
         // The one shot down_path migration cannot help here: its flag is already true on the

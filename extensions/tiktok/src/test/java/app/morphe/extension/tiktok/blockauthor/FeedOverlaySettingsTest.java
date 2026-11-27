@@ -95,23 +95,22 @@ public class FeedOverlaySettingsTest {
         Utils.setContext(RuntimeEnvironment.getApplication());
     }
 
-    /** Every control drawn on a video is opt-in, so a fresh install with every patch shows none. */
-    @Test public void aFreshInstallDrawsNoControlOnTheVideo() {
+    /** Every control drawn on a video but Download is opt-in, so a fresh install shows only that one. */
+    @Test public void aFreshInstallDrawsOnlyTheDownloadButtonOnTheVideo() {
         boolean oldMuteStatus = SettingsStatus.feedMuteEnabled;
         boolean oldDownloadsStatus = SettingsStatus.advancedDownloadsEnabled;
         SettingsStatus.feedMuteEnabled = true;
         SettingsStatus.advancedDownloadsEnabled = true;
         try {
             BooleanSetting[] switches = {Settings.BLOCK_AUTHOR_BUTTON, Settings.LOCAL_HIDE_BUTTON,
-                    Settings.BLOCK_SOUND_BUTTON, Settings.NOT_INTERESTED_BUTTON, Settings.FEED_MUTE_BUTTON,
-                    Settings.DOWNLOAD_BUTTON};
+                    Settings.BLOCK_SOUND_BUTTON, Settings.NOT_INTERESTED_BUTTON, Settings.FEED_MUTE_BUTTON};
             for (BooleanSetting setting : switches) {
                 setting.resetToDefault();
                 assertFalse(setting.key + " starts on", setting.get());
             }
             bind("video-one");
             for (String name : new String[]{"Block this creator", "Hide this creator on this phone",
-                    "Block this sound", "Not interested in this video", "Mute feed videos", "Save this video"}) {
+                    "Block this sound", "Not interested in this video", "Mute feed videos"}) {
                 View control = button(name);
                 assertTrue(name + " shows on a fresh install",
                         control == null || control.getVisibility() != View.VISIBLE);
