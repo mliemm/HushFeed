@@ -219,7 +219,7 @@ public final class LivePushToTalk {
             return;
         }
         Context context = view.getContext();
-        view.setText(L10n.t(context, talking ? "Talking" : "Hold to talk"));
+        view.setText(L10n.t(context, talking ? "Talking" : "Talk"));
         view.setContentDescription(L10n.t(context, talking ? "Talking" : "Hold to talk"));
         view.setAlpha(talking ? 1f : 0.85f);
     }

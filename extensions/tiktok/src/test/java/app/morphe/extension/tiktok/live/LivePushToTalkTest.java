@@ -69,7 +69,7 @@ public class LivePushToTalkTest {
         ViewGroup content = room.get().findViewById(android.R.id.content);
         for (int i = 0; i < content.getChildCount(); i++) {
             View child = content.getChildAt(i);
-            if (child instanceof TextView && "Hold to talk".contentEquals(((TextView) child).getText())) {
+            if (child instanceof TextView && "Talk".contentEquals(((TextView) child).getText())) {
                 return (TextView) child;
             }
         }
