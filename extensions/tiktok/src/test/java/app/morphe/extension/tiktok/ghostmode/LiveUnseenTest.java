@@ -115,8 +115,8 @@ public class LiveUnseenTest {
         Settings.GHOST_HIDE_LIVE_VIEWS.save(true);
     }
 
-    @Test public void theSwitchStartsOffAndAnEnterGoesOutWithGhostModeAlone() throws IOException {
-        assertFalse(Settings.GHOST_HIDE_LIVE_VIEWS.defaultValue);
+    @Test public void theSwitchStartsOnAndAnEnterGoesOutWithTheSwitchOff() throws IOException {
+        assertTrue(Settings.GHOST_HIDE_LIVE_VIEWS.defaultValue);
         Settings.GHOST_MODE.save(true);
         LiveUnseen.holdEnter(new Interceptor(ENTER), "chain");
         assertEquals(0, LiveUnseen.heldForTests());

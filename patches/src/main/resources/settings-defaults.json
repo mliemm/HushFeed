@@ -2245,13 +2245,13 @@
       "field": "GHOST_HIDE_LIVE_VIEWS",
       "key": "ghost_hide_live_views",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "ghost_hide_online_status": {
       "field": "GHOST_HIDE_ONLINE_STATUS",
       "key": "ghost_hide_online_status",
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "ghost_hide_profile_visits": {
       "field": "GHOST_HIDE_PROFILE_VISITS",

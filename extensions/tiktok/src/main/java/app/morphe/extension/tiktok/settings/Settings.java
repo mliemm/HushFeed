@@ -1746,12 +1746,12 @@ public class Settings extends BaseSettings {
 
     // Privacy.
     public static final BooleanSetting GHOST_MODE = new BooleanSetting("ghost_mode", FALSE);
-    // Stops the client's own activity status report. Off by default, and only meaningful while
+    // Stops the client's own activity status report. On by default, and only meaningful while
     // Ghost mode is on, so it sits under that switch.
     public static final BooleanSetting GHOST_HIDE_ONLINE_STATUS =
-            new BooleanSetting("ghost_hide_online_status", FALSE, false, Setting.parent(GHOST_MODE));
+            new BooleanSetting("ghost_hide_online_status", TRUE, false, Setting.parent(GHOST_MODE));
     // One switch per report Ghost mode holds back, so a reader can keep some and let others go.
-    // On by default: turning Ghost mode on still holds back all three, as it did before they existed.
+    // On by default: turning Ghost mode on holds back all of them.
     public static final BooleanSetting GHOST_HIDE_STORY_VIEWS =
             new BooleanSetting("ghost_hide_story_views", TRUE, false, Setting.parent(GHOST_MODE));
     public static final BooleanSetting GHOST_HIDE_PROFILE_VISITS =
@@ -1759,9 +1759,9 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting GHOST_HIDE_TYPING =
             new BooleanSetting("ghost_hide_typing", TRUE, false, Setting.parent(GHOST_MODE));
     // Holds back a LIVE room's enter request, which is what puts you on the host's viewer list
-    // (#420). Off by default, like Hide online status, and read at each request, so no restart.
+    // (#420). On by default, like Hide online status, and read at each request, so no restart.
     public static final BooleanSetting GHOST_HIDE_LIVE_VIEWS =
-            new BooleanSetting("ghost_hide_live_views", FALSE, false, Setting.parent(GHOST_MODE));
+            new BooleanSetting("ghost_hide_live_views", TRUE, false, Setting.parent(GHOST_MODE));
     // Answers a video like on the phone and keeps it there, so TikTok never gets it. Off by
     // default, and read at each like, so no restart.
     public static final BooleanSetting GHOST_LOCAL_LIKES =
